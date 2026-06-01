@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JR TOOLHUB - Pro Pack Suite</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- JsBarcode for Barcode Generation -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <!-- html2pdf Library for Bulk PDF Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Html5Qrcode Library for Camera and File Scanning -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <style>
+        body {
+            background-color: #f4f6fa;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app-card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+        .tool-btn {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 0.5rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid #f1f5f9;
+        }
+        .tool-btn:active, .tool-btn.active-tool {
+            transform: scale(0.95);
+            background-color: #f0fdf4;
+            border-color: #22c55e;
+        }
+        .active-tab {
+            background-color: #0e5a77 !important;
+            color: white !important;
+        }
+        
+        /* Premium A4 Layout Matrix Setup for EXACTLY 15 ITEMS (3 columns x 5 rows) */
+        #pdf-export-wrapper {
+            padding: 12mm 12mm;
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            box-sizing: border-box;
+        }
+        .pdf-grid-15 {
+            display: grid;
+            grid-template-cols: repeat(3, 1fr); /* 3 Columns */
+            column-gap: 15px;
+            row-gap: 18px;
+        }
+        .pdf-item-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border: 1px dashed #cccccc;
+            border-radius: 8px;
+            background: #ffffff;
+            box-sizing: border-box;
+            height: 50mm; /* Dynamic height calibration for 5 rows */
+        }
+        .pdf-item-box img {
+            width: 120px !important;
+            height: 120px !important;
+        }
+        .pdf-item-box canvas {
+            max-width: 100% !important;
+        }
+        .pdf-meta-text {
+            margin-top: 6px;
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            color: #000000;
+            text-align: center;
+        }
+        
+        #camera-preview-region video {
+            width: 100% !important;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body class="font-sans text-slate-800 pb-10">
+
+    <!-- Header App Bar -->
+    <header class="sticky top-0 bg-[#f4f6fa] px-5 py-4 flex items-center justify-between z-50 border-b border-slate-200/50">
+        <div class="flex items-center space-x-3">
+            <div class="p-2 bg-[#0e5a77] text-white rounded-xl shadow-xs">
+                <i data-lucide="qr-code" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">
+                    <span class="text-amber-500">JR</span> TOOLHUB
+                </h1>
+                <p class="text-[10px] text-slate-500 font-medium">Advanced Multi-Gen & Scanner</p>
+            </div>
+        </div>
+        <a href="https://publicqgrm.github.io/QR-privacy.html/" target="_blank" class="p-2 bg-white hover:bg-slate-100 rounded-full border border-slate-200 transition text-slate-600 shadow-xs" title="Privacy Policy">
+            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-600"></i>
+        </a>
+    </header>
+
+    <!-- MAIN APP WRAPPER -->
+    <main class="max-w-md mx-auto px-4 mt-2 space-y-4">
+
+        <!-- Navigation Switcher -->
+        <div class="grid grid-cols-2 gap-2 bg-slate-200 p-1.5 rounded-xl text-sm font-bold">
+            <button onclick="switchMainTab('gen-hub')" id="tab-gen-hub" class="py-2.5 rounded-lg text-center active-tab shadow-xs transition">
+                Generators
+            </button>
+            <button onclick="switchMainTab('scan-hub')" id="tab-scan-hub" class="py-2.5 rounded-lg text-center text-slate-600 bg-transparent transition">
+                Scanners
+            </button>
+        </div>
+
+        <!-- ================= VIEW 1: GENERATOR HUB ================= -->
+        <div id="gen-hub-view" class="space-y-4">
+            
+            <!-- Grid Selection -->
+            <div class="grid grid-cols-3 gap-2.5">
+                <div onclick="selectTool('text-qr', 'Text QR Code')" id="btn-text-qr" class="tool-btn active-tool">
+                    <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="align-left" class="w-5 h-5"></i></div>
+                    <span class="text-[10px] font-bold text-slate-700 mt-1.5">Text QR</span>
+                </div>
+                <div onclick="selectTool('url-qr', 'URL Website Link QR')" id="btn-url-qr" class="tool-btn">
+                    <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl"><i data-lucide="link" class="w-5 h-5"></i></div>
+                    <span class="text-[10px] font-bold text-slate-700 mt-1.5">URL QR</span>
+                </div>
+                <div onclick="selectTool('upi-qr', 'UPI Payment QR')" id="btn-upi-qr" class="tool-btn">
+                    <div class="p-2.5 bg-purple-50 text-purple-600 rounded-xl"><i data-lucide="wallet" class="w-5 h-5"></i></div>
+                    <span class="text-[10px] font-bold text-slate-700 mt-1.5">UPI Pay QR</span>
+                </div>
+                <div onclick="selectTool('contact-qr', 'Contact Card (vCard) QR')" id="btn-contact-qr" class="tool-btn">
+                    <div class="p-2.5 bg-orange-50 text-orange-600 rounded-xl"><i data-lucide="user-square" class="w-5 h-5"></i></div>
+                    <span class="text-[10px] font-bold text-slate-700 mt-1.5">Contact QR</span>
+                </div>
+                <div onclick="selectTool('wifi-qr', 'WiFi Network Config QR')" id="btn-wifi-qr" class="tool-btn">
+                    <div class="p-2.5 bg-cyan-50 text-cyan-600 rounded-xl"><i data-lucide="wifi" class="w-5 h-5"></i></div>
+                    <span class="text-[10px] font-bold text-slate-700 mt-1.5">WiFi QR</span>
+                </div>
+                <div onclick="selectTool('phone-qr', 'Mobile Number QR')" id="btn-phone-qr" class="tool-btn">
+                    <div class="p-2.5 bg-pink-50 text-pink-600 rounded-xl"><i data-lucide="phone" class="w-5 h-5"></i></div>
+                    <span class="text-[10px] font-bold text-slate-700 mt-1.5">Mobile QR</span>
+                </div>
+                <div onclick="selectTool('barcode-gen', 'Single Barcode Generator')" id="btn-barcode-gen" class="tool-btn">
+                    <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="barcode" class="w-5 h-5"></i></div>
+                    <span class="text-[10px] font-bold text-slate-700 mt-1.5">Barcode Gen</span>
+                </div>
+                <div onclick="selectTool('bulk-qr', 'Bulk QR (15 Per Page A4)')" id="btn-bulk-qr" class="tool-btn border-amber-300 bg-amber-50/20">
+                    <div class="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><i data-lucide="layers" class="w-5 h-5"></i></div>
+                    <span class="text-[10px] font-bold text-slate-800 mt-1.5">Bulk QR</span>
+                </div>
+                <div onclick="selectTool('bulk-barcode', 'Bulk Barcode (15 Per Page A4)')" id="btn-bulk-barcode" class="tool-btn border-amber-300 bg-amber-50/20">
+                    <div class="p-2.5 bg-slate-100 text-slate-800 rounded-xl"><i data-lucide="grid" class="w-5 h-5"></i></div>
+                    <span class="text-[10px] font-bold text-slate-800 mt-1.5">Bulk Barcode</span>
+                </div>
+            </div>
+
+            <!-- Configuration Workspace Panels -->
+            <div class="app-card p-5 border border-slate-100">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-4">
+                    <h3 id="panel-title" class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-[#0e5a77]"></span> Text QR Code
+                    </h3>
+                </div>
+
+                <div id="input-fields-container">
+                    
+                    <!-- Text Panel -->
+                    <div id="field-text-qr" class="form-group space-y-1">
+                        <label class="block text-xs font-bold text-slate-600">Enter Content Text</label>
+                        <input type="text" id="input-text" value="Welcome to JR Toolhub Suite" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-medium">
+                    </div>
+
+                    <!-- URL Panel -->
+                    <div id="field-url-qr" class="form-group space-y-1 hidden">
+                        <label class="block text-xs font-bold text-slate-600">Target Link URL</label>
+                        <input type="url" id="input-url" value="https://google.com" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-medium">
+                    </div>
+
+                    <!-- UPI Pay Panel -->
+                    <div id="field-upi-qr" class="form-group space-y-3 hidden">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600">UPI Address (VPA)</label>
+                            <input type="text" id="input-upi-id" placeholder="merchant@upi" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="input-upi-name" placeholder="Payee Name" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                            <input type="number" id="input-upi-amount" placeholder="Amount (INR)" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Contact Panel -->
+                    <div id="field-contact-qr" class="form-group space-y-2 hidden">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="input-contact-name" placeholder="First Name" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                            <input type="text" id="input-contact-phone" placeholder="Phone No" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                        </div>
+                    </div>
+
+                    <!-- WiFi Panel -->
+                    <div id="field-wifi-qr" class="form-group space-y-2 hidden">
+                        <input type="text" id="input-wifi-ssid" placeholder="WiFi Network Name (SSID)" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                        <input type="password" id="input-wifi-pass" placeholder="Network Password" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                    </div>
+
+                    <!-- Mobile Panel -->
+                    <div id="field-phone-qr" class="form-group space-y-1 hidden">
+                        <label class="block text-xs font-bold text-slate-600">Mobile Phone Number</label>
+                        <input type="tel" id="input-phone" value="+8801700000000" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm">
+                    </div>
+
+                    <!-- Barcode Single Panel -->
+                    <div id="field-barcode-gen" class="form-group space-y-1 hidden">
+                        <label class="block text-xs font-bold text-slate-600">Barcode Value (Numbers Preferred)</label>
+                        <input type="text" id="input-barcode" value="9876543210" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-mono">
+                    </div>
+
+                    <!-- Bulk QR Matrix Setup -->
+                    <div id="field-bulk-qr" class="form-group hidden">
+                        <div class="flex items-center gap-2">
+                            <div class="flex-[2] flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1">Prefix Text</span>
+                                <input type="text" id="bulk-input-prefix" value="JR-QR-" class="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm font-semibold">
+                            </div>
+                            <div class="flex-1 flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1 text-center">Start Counter</span>
+                                <input type="number" id="bulk-input-start" value="101" class="w-full py-2.5 text-center border border-slate-200 rounded-xl text-sm font-bold">
+                            </div>
+                            <div class="flex-1 flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1 text-center">End Counter</span>
+                                <input type="number" id="bulk-input-end" value="115" class="w-full py-2.5 text-center border border-slate-200 rounded-xl text-sm font-bold">
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-amber-600 font-semibold mt-2 text-center">💡 ১টি পাতায় ঠিক ১৫টি ডাটা প্রিন্ট হবে (যেমন: ১০১ থেকে ১১৫)</p>
+                    </div>
+
+                    <!-- Bulk Barcode Setup -->
+                    <div id="field-bulk-barcode" class="form-group hidden">
+                        <div class="flex items-center gap-2">
+                            <div class="flex-[2] flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1">Base Code / Prefix</span>
+                                <input type="text" id="bulk-bar-prefix" value="BARCODE" class="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm font-semibold">
+                            </div>
+                            <div class="flex-1 flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1 text-center">Start</span>
+                                <input type="number" id="bulk-bar-start" value="5001" class="w-full py-2.5 text-center border border-slate-200 rounded-xl text-sm font-bold">
+                            </div>
+                            <div class="flex-1 flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1 text-center">End</span>
+                                <input type="number" id="bulk-bar-end" value="5015" class="w-full py-2.5 text-center border border-slate-200 rounded-xl text-sm font-bold">
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-amber-600 font-semibold mt-2 text-center">💡 এক পেজে ১৫টি বারকোড প্রিন্ট করার জন্য সেট করা হয়েছে।</p>
+                    </div>
+
+                </div>
+
+                <button onclick="processGeneration()" class="w-full bg-[#0e5a77] hover:bg-[#0a455c] text-white py-3.5 rounded-xl font-bold transition mt-4 flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    <span>Generate Artifact</span>
+                </button>
+            </div>
+
+            <!-- RESULT HUB RENDER CARDS -->
+            <div id="output-display-card" class="app-card p-5 hidden border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center">
+                <div class="text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-wider">Preview Zone</div>
+                
+                <!-- Single QR Box Container -->
+                <div id="single-render-box" class="bg-white p-4 rounded-xl shadow-xs hidden">
+                    <div id="qr-code-canvas"></div>
+                </div>
+                
+                <!-- Single Barcode Box Container -->
+                <div id="barcode-canvas-wrapper" class="hidden bg-white p-4 rounded-xl shadow-xs w-full overflow-x-auto text-center">
+                    <svg id="barcode-svg" class="mx-auto"></svg>
+                </div>
+
+                <!-- Live Grid Screen Preview -->
+                <div id="bulk-preview-grid" class="grid grid-cols-3 gap-2 w-full max-h-60 overflow-y-auto p-1 hidden"></div>
+
+                <div class="mt-4 w-full max-w-[250px]">
+                    <button onclick="handleDownload()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-3 rounded-xl flex items-center justify-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span id="download-btn-text">Download Asset</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Off-Screen High Fidelity A4 15-Matrix Export Frame -->
+        <div style="position: absolute; left: -9999px; top: -9999px;">
+            <div id="pdf-export-wrapper">
+                <div id="pdf-matrix-grid" class="pdf-grid-15"></div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW 2: SCANNERS HUB ================= -->
+        <div id="scan-hub-view" class="space-y-4 hidden">
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="startLiveScanner()" class="p-3 bg-[#0e5a77] text-white rounded-xl font-bold text-xs flex items-center gap-2 justify-center shadow-xs">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                    <span>Open Camera</span>
+                </button>
+                <label class="p-3 bg-amber-500 text-slate-950 text-center rounded-xl font-bold text-xs flex items-center gap-2 justify-center shadow-xs cursor-pointer">
+                    <i data-lucide="image-plus" class="w-4 h-4"></i>
+                    <span>Upload Image</span>
+                    <input type="file" id="gallery-file-input" accept="image/*" class="hidden" onchange="scanUploadedImage(this)">
+                </label>
+            </div>
+
+            <div class="app-card p-4 bg-slate-900 border border-slate-800 relative text-center text-white min-h-[260px] flex flex-col items-center justify-center">
+                <h4 id="scanner-mode-title" class="text-xs font-semibold text-slate-400 mb-2">Scanner Lens Standby</h4>
+                <div id="camera-preview-region" class="w-full rounded-lg bg-black overflow-hidden flex items-center justify-center"></div>
+                
+                <div id="scanner-result-box" class="mt-3 p-3 bg-slate-800 rounded-xl w-full text-left hidden">
+                    <span class="text-[10px] uppercase font-bold text-amber-400 block">Scanned Output:</span>
+                    <p id="scanner-result-text" class="text-xs font-mono text-slate-100 break-all select-all mt-1"></p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let currentActiveToolId = 'text-qr';
+        let html5QrEngine = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+
+        function switchMainTab(targetTab) {
+            stopScannerEngine();
+            const genView = document.getElementById('gen-hub-view');
+            const scanView = document.getElementById('scan-hub-view');
+            if(targetTab === 'gen-hub') {
+                genView.classList.remove('hidden');
+                scanView.classList.add('hidden');
+                document.getElementById('tab-gen-hub').className = "py-2.5 rounded-lg text-center active-tab shadow-xs transition";
+                document.getElementById('tab-scan-hub').className = "py-2.5 rounded-lg text-center text-slate-600 bg-transparent transition";
+            } else {
+                genView.classList.add('hidden');
+                scanView.classList.remove('hidden');
+                document.getElementById('tab-gen-hub').className = "py-2.5 rounded-lg text-center text-slate-600 bg-transparent transition";
+                document.getElementById('tab-scan-hub').className = "py-2.5 rounded-lg text-center active-tab shadow-xs transition";
+            }
+        }
+
+        function selectTool(toolId, titleLabel) {
+            currentActiveToolId = toolId;
+            document.getElementById('panel-title').innerHTML = `<span class="w-2 h-2 rounded-full bg-[#0e5a77]"></span> ${titleLabel}`;
+            
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active-tool'));
+            document.getElementById(`btn-${toolId}`).classList.add('active-tool');
+
+            document.querySelectorAll('.form-group').forEach(el => el.classList.add('hidden'));
+            const activeForm = document.getElementById(`field-${toolId}`);
+            if(activeForm) activeForm.classList.remove('hidden');
+            
+            document.getElementById('output-display-card').classList.add('hidden');
+        }
+
+        function processGeneration() {
+            const outputCard = document.getElementById('output-display-card');
+            const qrCanvas = document.getElementById('qr-code-canvas');
+            const barWrapper = document.getElementById('barcode-canvas-wrapper');
+            const previewGrid = document.getElementById('bulk-preview-grid');
+            const singleBox = document.getElementById('single-render-box');
+            const dBtnText = document.getElementById('download-btn-text');
+            const pdfMatrix = document.getElementById('pdf-matrix-grid');
+
+            outputCard.classList.remove('hidden');
+            qrCanvas.innerHTML = "";
+            previewGrid.innerHTML = "";
+            pdfMatrix.innerHTML = "";
+            
+            singleBox.classList.add('hidden');
+            barWrapper.classList.add('hidden');
+            previewGrid.classList.add('hidden');
+
+            let payloadData = "";
+            dBtnText.innerText = "Download PNG Image"; 
+
+            // 1. BULK QR CODE CONTROLLER (15 Per Page A4 Setup)
+            if (currentActiveToolId === 'bulk-qr') {
+                previewGrid.classList.remove('hidden');
+                dBtnText.innerText = "Download 15-Grid PDF";
+
+                const prefix = document.getElementById('bulk-input-prefix').value || "";
+                const start = parseInt(document.getElementById('bulk-input-start').value) || 101;
+                const end = parseInt(document.getElementById('bulk-input-end').value) || 115;
+
+                for (let i = start; i <= end; i++) {
+                    const finalString = `${prefix}${i}`;
+
+                    // App Preview Rendering
+                    const gridCell = document.createElement('div');
+                    gridCell.className = "bg-white p-2 border rounded-lg flex flex-col items-center justify-center";
+                    new QRCode(gridCell, { text: finalString, width: 80, height: 80 });
+                    const txt = document.createElement('span');
+                    txt.className = "text-[9px] font-bold mt-1 text-black truncate w-full text-center";
+                    txt.innerText = finalString;
+                    gridCell.appendChild(txt);
+                    previewGrid.appendChild(gridCell);
+
+                    // High-Quality PDF DOM Generation
+                    const pdfBox = document.createElement('div');
+                    pdfBox.className = "pdf-item-box";
+                    const uid = `pdf-node-${i}`;
+                    const qrHolder = document.createElement('div');
+                    qrHolder.id = uid;
+                    pdfBox.appendChild(qrHolder);
+
+                    const metaLabel = document.createElement('div');
+                    metaLabel.className = "pdf-meta-text";
+                    metaLabel.innerText = finalString;
+                    pdfBox.appendChild(metaLabel);
+                    pdfMatrix.appendChild(pdfBox);
+
+                    new QRCode(document.getElementById(uid), { text: finalString, width: 130, height: 130 });
+                }
+                return;
+            }
+
+            // 2. BULK BARCODE GENERATOR CONTROLLER (15 Per Page A4 Setup)
+            if (currentActiveToolId === 'bulk-barcode') {
+                previewGrid.classList.remove('hidden');
+                dBtnText.innerText = "Download Bulk Barcode PDF";
+
+                const bPrefix = document.getElementById('bulk-bar-prefix').value || "";
+                const bStart = parseInt(document.getElementById('bulk-bar-start').value) || 5001;
+                const bEnd = parseInt(document.getElementById('bulk-bar-end').value) || 5015;
+
+                for (let i = bStart; i <= bEnd; i++) {
+                    const finalBarString = `${bPrefix}${i}`;
+
+                    // Screen Preview setup
+                    const gridCell = document.createElement('div');
+                    gridCell.className = "bg-white p-1 border rounded-lg flex flex-col items-center justify-center overflow-hidden";
+                    const sv = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    sv.id = `preview-svg-${i}`;
+                    gridCell.appendChild(sv);
+                    previewGrid.appendChild(gridCell);
+                    JsBarcode(`#preview-svg-${i}`, finalBarString, { format: "CODE128", width: 1, height: 35, fontSize: 10 });
+
+                    // PDF Document setup
+                    const pdfBox = document.createElement('div');
+                    pdfBox.className = "pdf-item-box";
+                    const targetSvgId = `pdf-svg-${i}`;
+                    const pdfSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    pdfSvg.id = targetSvgId;
+                    pdfBox.appendChild(pdfSvg);
+                    pdfMatrix.appendChild(pdfBox);
+
+                    JsBarcode(`#${targetSvgId}`, finalBarString, { format: "CODE128", width: 2, height: 80, fontSize: 14, fontOptions: "bold" });
+                }
+                return;
+            }
+
+            // 3. SINGLE BARCODE GENERATOR CONTROLLER
+            if (currentActiveToolId === 'barcode-gen') {
+                barWrapper.classList.remove('hidden');
+                let barVal = document.getElementById('input-barcode').value || "9876543210";
+                JsBarcode("#barcode-svg", barVal, { format: "CODE128", width: 2, height: 75, displayValue: true });
+                dBtnText.innerText = "Download Barcode PNG";
+                return;
+            }
+
+            // 4. EVERY SINGLE QR VALUE ASSIGNMENT LOGIC (Fixed & Functional)
+            if (currentActiveToolId === 'text-qr') {
+                payloadData = document.getElementById('input-text').value || "Empty Text";
+            } else if (currentActiveToolId === 'url-qr') {
+                payloadData = document.getElementById('input-url').value || "https://google.com";
+            } else if (currentActiveToolId === 'phone-qr') {
+                payloadData = `tel:${document.getElementById('input-phone').value}`;
+            } else if (currentActiveToolId === 'wifi-qr') {
+                let ssid = document.getElementById('input-wifi-ssid').value || "MyWiFi";
+                let pass = document.getElementById('input-wifi-pass').value || "";
+                payloadData = `WIFI:S:${ssid};P:${pass};;`;
+            } else if (currentActiveToolId === 'upi-qr') {
+                let upiId = document.getElementById('input-upi-id').value || "payee@upi";
+                let name = encodeURIComponent(document.getElementById('input-upi-name').value || "Merchant");
+                let amount = document.getElementById('input-upi-amount').value;
+                payloadData = `upi://pay?pa=${upiId}&pn=${name}${amount ? '&am='+amount : ''}&cu=INR`;
+            } else if (currentActiveToolId === 'contact-qr') {
+                let cName = document.getElementById('input-contact-name').value || "Name";
+                let cPhone = document.getElementById('input-contact-phone').value || "000";
+                payloadData = `BEGIN:VCARD\nVERSION:3.0\nN:${cName}\nTEL:${cPhone}\nEND:VCARD`;
+            }
+
+            // Single Code Display Execution
+            singleBox.classList.remove('hidden');
+            new QRCode(qrCanvas, {
+                text: payloadData,
+                width: 200,
+                height: 200,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function handleDownload() {
+            if (currentActiveToolId === 'bulk-qr' || currentActiveToolId === 'bulk-barcode') {
+                const element = document.getElementById('pdf-export-wrapper');
+                const opt = {
+                    margin:       0,
+                    filename:     `${currentActiveToolId}_A4_Document.pdf`,
+                    image:        { type: 'jpeg', quality: 1.0 },
+                    html2canvas:  { scale: 2.5, useCORS: true },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(element).save();
+            } 
+            else if (currentActiveToolId === 'barcode-gen') {
+                const svgElement = document.getElementById('barcode-svg');
+                const xml = new XMLSerializer().serializeToString(svgElement);
+                const svg64 = btoa(unescape(encodeURIComponent(xml)));
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.onload = function() {
+                    canvas.width = img.width * 2;
+                    canvas.height = img.height * 2;
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const link = document.createElement('a');
+                    link.download = 'barcode_jrhub.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                };
+                img.src = 'data:image/svg+xml;base64,' + svg64;
+            }
+            else {
+                // High Quality Download Routing for Single QR
+                const qrImg = document.querySelector('#qr-code-canvas img');
+                if(qrImg && qrImg.src) {
+                    const link = document.createElement('a');
+                    link.download = `${currentActiveToolId}_qr.png`;
+                    link.href = qrImg.src;
+                    link.click();
+                }
+            }
+        }
+
+        // ================= SCANNERS CONTROLLER MATRIX =================
+        function startLiveScanner() {
+            document.getElementById('scanner-mode-title').innerText = "Live Back Camera Running";
+            document.getElementById('scanner-result-box').classList.add('hidden');
+            stopScannerEngine();
+
+            document.getElementById('camera-preview-region').innerHTML = `<div id="live-camera-view" style="width: 100%;"></div>`;
+            html5QrEngine = new Html5Qrcode("live-camera-view");
+
+            html5QrEngine.start(
+                { facingMode: "environment" }, 
+                { fps: 20, qrbox: { width: 230, height: 230 } }, 
+                onScanSuccess, 
+                onScanFailure
+            ).catch(err => {
+                html5QrEngine.start({ facingMode: "user" }, { fps: 20, qrbox: { width: 230, height: 230 } }, onScanSuccess, onScanFailure);
+            });
+        }
+
+        function scanUploadedImage(input) {
+            if (!input.files || input.files.length === 0) return;
+            stopScannerEngine();
+            
+            const file = input.files[0];
+            document.getElementById('camera-preview-region').innerHTML = `<div id="sandbox-container" style="display:none;"></div>`;
+            const fileScanner = new Html5Qrcode("sandbox-container");
+            
+            fileScanner.scanFile(file, true)
+                .then(text => {
+                    onScanSuccess(text);
+                    fileScanner.clear();
+                })
+                .catch(err => {
+                    alert("কোনো কোড পাওয়া যায়নি। আবার ট্রাই করুন।");
+                    fileScanner.clear();
+                });
+        }
+
+        function onScanSuccess(decodedText) {
+            if (navigator.vibrate) navigator.vibrate(100);
+            document.getElementById('scanner-result-box').classList.remove('hidden');
+            document.getElementById('scanner-result-text').innerText = decodedText;
+            alert(`Scanned Content:\n\n${decodedText}`);
+        }
+
+        function onScanFailure(error) {}
+
+        function stopScannerEngine() {
+            if (html5QrEngine && html5QrEngine.isScanning) {
+                html5QrEngine.stop().then(() => {
+                    document.getElementById('camera-preview-region').innerHTML = "";
+                }).catch(e => console.log(e));
+            }
+        }
+    </script>
+</body>
+</html>
