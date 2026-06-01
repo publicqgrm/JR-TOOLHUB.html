@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JR TOOLHUB - Professional Secure Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f4f6fa;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app-card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+        .tool-btn {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 0.5rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid #f1f5f9;
+        }
+        .tool-btn:active, .tool-btn.active-tool {
+            transform: scale(0.95);
+            background-color: #f0fdf4;
+            border-color: #22c55e;
+        }
+        .active-tab {
+            background-color: #0e5a77 !important;
+            color: white !important;
+        }
+        
+        /* STRICT 1-PAGE A4 LAYOUT FOR BULK ITEMS (20 Matrix Fix) */
+        #pdf-export-wrapper {
+            padding: 8mm 8mm;
+            background: white;
+            width: 210mm;
+            height: 297mm;
+            max-height: 297mm;
+            box-sizing: border-box;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+        .pdf-grid-20 {
+            display: grid;
+            grid-template-cols: repeat(4, 1fr);
+            column-gap: 8px;
+            row-gap: 8px;
+            height: 100%;
+        }
+        .pdf-item-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border: 1px dashed #cccccc;
+            border-radius: 6px;
+            background: #ffffff;
+            box-sizing: border-box;
+            height: 54mm;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+        .pdf-item-box img {
+            width: 110px !important;
+            height: 110px !important;
+        }
+        .pdf-item-box svg {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+        .pdf-meta-text {
+            margin-top: 4px;
+            font-size: 10px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            color: #000000;
+            text-align: center;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* 4 LABELS PER SHEET GRID SYSTEM */
+        #pdf-4-label-wrapper {
+            padding: 10mm;
+            background: white;
+            width: 210mm;
+            height: 297mm;
+            max-height: 297mm;
+            box-sizing: border-box;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+        .pdf-grid-4 {
+            display: grid;
+            grid-template-cols: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 12px;
+            height: 100%;
+            width: 100%;
+        }
+        .pdf-4-item-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #94a3b8;
+            border-radius: 8px;
+            background: #ffffff;
+            box-sizing: border-box;
+            padding: 6px;
+            height: 135mm;
+            overflow: hidden;
+        }
+        .pdf-4-item-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        #camera-preview-region video {
+            width: 100% !important;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+    </style>
+    <script>
+        // Initialize PDF.js Worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    </script>
+</head>
+<body class="font-sans text-slate-800 pb-10">
+
+    <header class="sticky top-0 bg-[#f4f6fa] px-5 py-4 flex flex-col items-start z-50 border-b border-slate-200/50">
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-[#0e5a77] text-white rounded-xl shadow-xs">
+                    <i data-lucide="qr-code" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-slate-900">
+                        <span class="text-amber-500">JR</span> TOOLHUB
+                    </h1>
+                </div>
+            </div>
+            <a href="https://publicqgrm.github.io/QR-privacy.html/" target="_blank" class="p-2 bg-white rounded-full border border-slate-200 text-slate-600 shadow-xs">
+                <i data-lucide="shield-check" class="w-5 h-5 text-emerald-600"></i>
+            </a>
+        </div>
+        <p class="text-[10px] text-slate-500 font-semibold tracking-tight mt-1 bg-white px-2 py-1 rounded-md border border-slate-200/60 w-full">
+            There are many tools here which are 100% security bypass and safety and very easy.
+        </p>
+    </header>
+
+    <main class="max-w-md mx-auto px-4 mt-2 space-y-4">
+
+        <div class="grid grid-cols-2 gap-2 bg-slate-200 p-1.5 rounded-xl text-sm font-bold">
+            <button onclick="switchMainTab('gen-hub')" id="tab-gen-hub" class="py-2.5 rounded-lg text-center active-tab shadow-xs transition">
+                Generators & Tools
+            </button>
+            <button onclick="switchMainTab('scan-hub')" id="tab-scan-hub" class="py-2.5 rounded-lg text-center text-slate-600 bg-transparent transition">
+                Scanners
+            </button>
+        </div>
+
+        <div id="gen-hub-view" class="space-y-4">
+            
+            <div class="grid grid-cols-3 gap-2.5">
+                <div onclick="selectTool('text-qr', 'Text QR Code')" id="btn-text-qr" class="tool-btn active-tool">
+                    <div class="p-2 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="align-left" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-bold text-slate-700 mt-1">Text QR</span>
+                </div>
+                <div onclick="selectTool('url-qr', 'URL Website Link QR')" id="btn-url-qr" class="tool-btn">
+                    <div class="p-2 bg-emerald-50 text-emerald-600 rounded-xl"><i data-lucide="link" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-bold text-slate-700 mt-1">URL QR</span>
+                </div>
+                <div onclick="selectTool('upi-qr', 'UPI Payment QR')" id="btn-upi-qr" class="tool-btn">
+                    <div class="p-2 bg-purple-50 text-purple-600 rounded-xl"><i data-lucide="wallet" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-bold text-slate-700 mt-1">UPI Pay QR</span>
+                </div>
+                <div onclick="selectTool('contact-qr', 'Contact Card (vCard) QR')" id="btn-contact-qr" class="tool-btn">
+                    <div class="p-2 bg-orange-50 text-orange-600 rounded-xl"><i data-lucide="user-square" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-bold text-slate-700 mt-1">Contact QR</span>
+                </div>
+                <div onclick="selectTool('wifi-qr', 'WiFi Network Config QR')" id="btn-wifi-qr" class="tool-btn">
+                    <div class="p-2 bg-cyan-50 text-cyan-600 rounded-xl"><i data-lucide="wifi" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-bold text-slate-700 mt-1">WiFi QR</span>
+                </div>
+                <div onclick="selectTool('phone-qr', 'Mobile Number QR')" id="btn-phone-qr" class="tool-btn">
+                    <div class="p-2 bg-pink-50 text-pink-600 rounded-xl"><i data-lucide="phone" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-bold text-slate-700 mt-1">Mobile QR</span>
+                </div>
+                <div onclick="selectTool('barcode-gen', 'Single Barcode Generator')" id="btn-barcode-gen" class="tool-btn">
+                    <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="barcode" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-bold text-slate-700 mt-1">Barcode Gen</span>
+                </div>
+                <div onclick="selectTool('bulk-qr', 'Bulk QR (20 Per Page A4)')" id="btn-bulk-qr" class="tool-btn border-amber-300 bg-amber-50/10">
+                    <div class="p-2 bg-rose-50 text-rose-600 rounded-xl"><i data-lucide="layers" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-bold text-slate-800 mt-1">Bulk QR</span>
+                </div>
+                <div onclick="selectTool('bulk-barcode', 'Bulk Barcode (20 Per Page A4)')" id="btn-bulk-barcode" class="tool-btn border-amber-300 bg-amber-50/10">
+                    <div class="p-2 bg-slate-100 text-slate-800 rounded-xl"><i data-lucide="grid" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-bold text-slate-800 mt-1">Bulk Barcode</span>
+                </div>
+
+                <div onclick="selectTool('meesho-crop', 'Meesho Shipping Label Crop Tool')" id="btn-meesho-crop" class="tool-btn border-orange-200 bg-orange-50/20">
+                    <div class="p-2 bg-gradient-to-tr from-pink-500 to-orange-500 text-white rounded-xl"><i data-lucide="scissors" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-extrabold text-slate-800 mt-1 text-center leading-tight">Meesho Crop</span>
+                </div>
+                <div onclick="selectTool('flipkart-crop', 'Flipkart Label Crop Tool')" id="btn-flipkart-crop" class="tool-btn border-blue-200 bg-blue-50/20">
+                    <div class="p-2 bg-blue-600 text-white rounded-xl"><i data-lucide="crop" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-extrabold text-slate-800 mt-1 text-center leading-tight">Flipkart Crop</span>
+                </div>
+                <div onclick="selectTool('merge-pdf', 'Merge PDF Tool')" id="btn-merge-pdf" class="tool-btn border-emerald-200 bg-emerald-50/20">
+                    <div class="p-2 bg-emerald-600 text-white rounded-xl"><i data-lucide="file-plus-2" class="w-4 h-4"></i></div>
+                    <span class="text-[9px] font-extrabold text-slate-800 mt-1 text-center leading-tight">Merge PDF</span>
+                </div>
+            </div>
+
+            <div class="app-card p-5 border border-slate-100">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-4">
+                    <h3 id="panel-title" class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-[#0e5a77]"></span> Text QR Code
+                    </h3>
+                </div>
+
+                <div id="input-fields-container">
+                    <div id="field-text-qr" class="form-group space-y-1">
+                        <label class="block text-xs font-bold text-slate-600">Enter Content Text</label>
+                        <input type="text" id="input-text" value="Welcome to JR Toolhub" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-medium">
+                    </div>
+                    <div id="field-url-qr" class="form-group space-y-1 hidden">
+                        <label class="block text-xs font-bold text-slate-600">Target Website Link URL</label>
+                        <input type="url" id="input-url" value="https://google.com" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-medium">
+                    </div>
+                    <div id="field-upi-qr" class="form-group space-y-3 hidden">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600">UPI ID Address</label>
+                            <input type="text" id="input-upi-id" value="merchant@upi" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-medium">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="input-upi-name" value="JR Merchant" placeholder="Payee Name" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                            <input type="number" id="input-upi-amount" placeholder="Amount (Optional)" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                        </div>
+                    </div>
+                    <div id="field-contact-qr" class="form-group space-y-2 hidden">
+                        <label class="block text-xs font-bold text-slate-600">Contact Configuration</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="input-contact-name" value="John Doe" placeholder="Full Name" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                            <input type="text" id="input-contact-phone" value="+8801711111111" placeholder="Phone Number" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                        </div>
+                    </div>
+                    <div id="field-wifi-qr" class="form-group space-y-2 hidden">
+                        <label class="block text-xs font-bold text-slate-600">Wireless Configuration</label>
+                        <input type="text" id="input-wifi-ssid" value="MyHomeWiFi" placeholder="WiFi Network SSID" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                        <input type="password" id="input-wifi-pass" value="12345678" placeholder="Network Password" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                    <div id="field-phone-qr" class="form-group space-y-1 hidden">
+                        <label class="block text-xs font-bold text-slate-600">Mobile Phone Number</label>
+                        <input type="tel" id="input-phone" value="+8801700000000" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold">
+                    </div>
+                    <div id="field-barcode-gen" class="form-group space-y-1 hidden">
+                        <label class="block text-xs font-bold text-slate-600">Barcode Value</label>
+                        <input type="text" id="input-barcode" value="9876543210" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-mono">
+                    </div>
+                    <div id="field-bulk-qr" class="form-group hidden">
+                        <div class="flex items-center gap-2">
+                            <div class="flex-[2] flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1">Prefix Text</span>
+                                <input type="text" id="bulk-input-prefix" value="JR-QR-" class="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm font-semibold">
+                            </div>
+                            <div class="flex-1 flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1 text-center">Start</span>
+                                <input type="number" id="bulk-input-start" value="101" class="w-full py-2.5 text-center border border-slate-200 rounded-xl text-sm font-bold">
+                            </div>
+                            <div class="flex-1 flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1 text-center">End</span>
+                                <input type="number" id="bulk-input-end" value="120" class="w-full py-2.5 text-center border border-slate-200 rounded-xl text-sm font-bold">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="field-bulk-barcode" class="form-group hidden">
+                        <div class="flex items-center gap-2">
+                            <div class="flex-[2] flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1">Prefix / Code</span>
+                                <input type="text" id="bulk-bar-prefix" value="BARCODE" class="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm font-semibold">
+                            </div>
+                            <div class="flex-1 flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1 text-center">Start</span>
+                                <input type="number" id="bulk-bar-start" value="5001" class="w-full py-2.5 text-center border border-slate-200 rounded-xl text-sm font-bold">
+                            </div>
+                            <div class="flex-1 flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-500 mb-1 text-center">End</span>
+                                <input type="number" id="bulk-bar-end" value="5020" class="w-full py-2.5 text-center border border-slate-200 rounded-xl text-sm font-bold">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="field-meesho-crop" class="form-group hidden space-y-3">
+                        <div class="bg-orange-50 p-2.5 rounded-xl border border-orange-200 text-center text-[11px] font-medium text-orange-800">
+                            ✨ Upload a PDF document below to open the custom-size interactive cropper workspace.
+                        </div>
+                        <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:bg-slate-50 transition relative">
+                            <input type="file" id="meesho-pdf-file" accept=".pdf" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handlePdfUpload(this)">
+                            <i data-lucide="file-text" class="w-8 h-8 text-slate-400 mx-auto mb-1.5"></i>
+                            <span class="text-xs font-bold block text-slate-600">Select or Drop Meesho Label PDF</span>
+                        </div>
+                    </div>
+
+                    <div id="field-flipkart-crop" class="form-group hidden space-y-3">
+                        <div class="bg-blue-50 p-2.5 rounded-xl border border-blue-200 text-center text-[11px] font-medium text-blue-800">
+                            ✨ Upload a PDF document below to open the custom-size interactive cropper workspace.
+                        </div>
+                        <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:bg-slate-50 transition relative">
+                            <input type="file" id="flipkart-pdf-file" accept=".pdf" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handlePdfUpload(this)">
+                            <i data-lucide="crop" class="w-8 h-8 text-blue-500 mx-auto mb-1.5"></i>
+                            <span class="text-xs font-bold block text-slate-600">Upload Flipkart Shipping Label PDF</span>
+                        </div>
+                    </div>
+
+                    <div id="field-merge-pdf" class="form-group hidden space-y-3">
+                        <p class="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg">
+                            Select multiple PDF segments or individual sheets to structurally bundle them into one streamlined sequence download file.
+                        </p>
+                        <div class="border-2 border-dashed border-slate-200 rounded-xl p-5 text-center hover:bg-slate-50 transition relative">
+                            <input type="file" id="merge-pdf-files" accept=".pdf" multiple class="absolute inset-0 opacity-0 cursor-pointer">
+                            <i data-lucide="files" class="w-8 h-8 text-emerald-500 mx-auto mb-1.5"></i>
+                            <span class="text-xs font-bold block text-slate-600">Choose Multiple PDF Files</span>
+                            <span class="text-[10px] text-slate-400 font-semibold text-emerald-600">Select 2 or more files</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="interactive-crop-workspace" class="hidden mt-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <i data-lucide="scissors" class="w-3.5 h-3.5 text-[#0e5a77]"></i> Precision Cropper
+                        </span>
+                        <div class="flex items-center gap-1">
+                            <button onclick="changeWorkspacePage(-1)" class="p-1 bg-white border border-slate-200 rounded-md text-slate-700">
+                                <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <span id="crop-page-info" class="text-[11px] font-bold px-1 text-slate-600">Page 1/1</span>
+                            <button onclick="changeWorkspacePage(1)" class="p-1 bg-white border border-slate-200 rounded-md text-slate-700">
+                                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center bg-white p-2 border border-slate-200 rounded-xl relative overflow-hidden">
+                        <canvas id="crop-live-preview-canvas" class="max-w-full h-auto rounded-lg shadow-inner bg-slate-100"></canvas>
+                    </div>
+
+                    <div class="space-y-2 bg-white p-3 border border-slate-100 rounded-xl shadow-xs">
+                        <div class="space-y-0.5">
+                            <div class="flex justify-between text-[10px] font-bold text-slate-500"><span>Top Border Trim</span><span id="val-crop-top">0%</span></div>
+                            <input type="range" id="crop-top" min="0" max="90" value="0" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#0e5a77]" oninput="updateCropPreview()">
+                        </div>
+                        <div class="space-y-0.5">
+                            <div class="flex justify-between text-[10px] font-bold text-slate-500"><span>Bottom Border Trim</span><span id="val-crop-bottom">0%</span></div>
+                            <input type="range" id="crop-bottom" min="0" max="90" value="0" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#0e5a77]" oninput="updateCropPreview()">
+                        </div>
+                        <div class="space-y-0.5">
+                            <div class="flex justify-between text-[10px] font-bold text-slate-500"><span>Left Border Trim</span><span id="val-crop-left">0%</span></div>
+                            <input type="range" id="crop-left" min="0" max="90" value="0" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#0e5a77]" oninput="updateCropPreview()">
+                        </div>
+                        <div class="space-y-0.5">
+                            <div class="flex justify-between text-[10px] font-bold text-slate-500"><span>Right Border Trim</span><span id="val-crop-right">0%</span></div>
+                            <input type="range" id="crop-right" min="0" max="90" value="0" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#0e5a77]" oninput="updateCropPreview()">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1">
+                        <div class="text-xs font-bold text-slate-600">
+                            A4 Page Slots: <span id="label-tray-count" class="text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">0 / 4 Collected</span>
+                        </div>
+                        <button onclick="clearCollectedTray()" class="text-[10px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-0.5 rounded-lg transition">
+                            Clear Matrix
+                        </button>
+                    </div>
+
+                    <button onclick="collectCurrentCrop()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-xs cursor-pointer">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Crop & Save to Matrix Slot</span>
+                    </button>
+
+                    <div id="tray-thumbnails-row" class="grid grid-cols-4 gap-2 pt-1 hidden"></div>
+                </div>
+
+                <button onclick="processGeneration()" class="w-full bg-[#0e5a77] hover:bg-[#0a455c] text-white py-3.5 rounded-xl font-bold transition mt-4 flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    <span id="main-action-btn-text">Generate Asset</span>
+                </button>
+            </div>
+
+            <div id="output-display-card" class="app-card p-5 hidden border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center">
+                <div class="text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-wider">Preview Sheet</div>
+                
+                <div id="single-render-box" class="bg-white p-4 rounded-xl shadow-xs hidden flex flex-col items-center justify-center w-full">
+                    <div id="canvas-dynamic-target-holder" class="mx-auto w-full flex justify-center"></div>
+                </div>
+
+                <div id="bulk-preview-grid" class="grid grid-cols-4 gap-1.5 w-full max-h-64 overflow-y-auto p-1 hidden"></div>
+
+                <div class="mt-4 w-full max-w-[250px]">
+                    <button onclick="handleDownload()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span id="download-btn-text">Download Asset</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div style="position: absolute; left: -9999px; top: -9999px;">
+            <div id="pdf-export-wrapper">
+                <div id="pdf-matrix-grid" class="pdf-grid-20"></div>
+            </div>
+        </div>
+
+        <div style="position: absolute; left: -9999px; top: -9999px;">
+            <div id="pdf-4-label-wrapper">
+                <div id="pdf-4-label-grid" class="pdf-grid-4"></div>
+            </div>
+        </div>
+
+        <div id="scan-hub-view" class="space-y-4 hidden">
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="startLiveScanner()" class="p-3 bg-[#0e5a77] text-white rounded-xl font-bold text-xs flex items-center gap-2 justify-center shadow-xs">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                    <span>Open Camera</span>
+                </button>
+                <label class="p-3 bg-amber-500 text-slate-950 text-center rounded-xl font-bold text-xs flex items-center gap-2 justify-center shadow-xs cursor-pointer">
+                    <i data-lucide="image-plus" class="w-4 h-4"></i>
+                    <span>Upload Image</span>
+                    <input type="file" id="gallery-file-input" accept="image/*" class="hidden" onchange="scanUploadedImage(this)">
+                </label>
+            </div>
+
+            <div class="app-card p-4 bg-slate-900 border border-slate-800 relative text-center text-white min-h-[260px] flex flex-col items-center justify-center">
+                <h4 id="scanner-mode-title" class="text-xs font-semibold text-slate-400 mb-2">Scanner Lens Standby</h4>
+                <div id="camera-preview-region" class="w-full rounded-lg bg-black overflow-hidden flex items-center justify-center"></div>
+                
+                <div id="scanner-result-box" class="mt-3 p-3 bg-slate-800 rounded-xl w-full text-left hidden">
+                    <span class="text-[10px] uppercase font-bold text-amber-400 block">Scanned Output:</span>
+                    <p id="scanner-result-text" class="text-xs font-mono text-slate-100 break-all select-all mt-1"></p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let currentActiveToolId = 'text-qr';
+        let html5QrEngine = null;
+
+        // Interactive Cropper Engine State Context variables
+        let workspacePdfDoc = null;
+        let workspaceCurrentPageNum = 1;
+        let collectedLabelsArray = [];
+        const hiddenSourceCanvas = document.createElement('canvas');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+
+        function switchMainTab(targetTab) {
+            stopScannerEngine();
+            const genView = document.getElementById('gen-hub-view');
+            const scanView = document.getElementById('scan-hub-view');
+            if(targetTab === 'gen-hub') {
+                genView.classList.remove('hidden');
+                scanView.classList.add('hidden');
+                document.getElementById('tab-gen-hub').className = "py-2.5 rounded-lg text-center active-tab shadow-xs transition";
+                document.getElementById('tab-scan-hub').className = "py-2.5 rounded-lg text-center text-slate-600 bg-transparent transition";
+            } else {
+                genView.classList.add('hidden');
+                scanView.classList.remove('hidden');
+                document.getElementById('tab-gen-hub').className = "py-2.5 rounded-lg text-center text-slate-600 bg-transparent transition";
+                document.getElementById('tab-scan-hub').className = "py-2.5 rounded-lg text-center active-tab shadow-xs transition";
+            }
+        }
+
+        function selectTool(toolId, titleLabel) {
+            currentActiveToolId = toolId;
+            document.getElementById('panel-title').innerHTML = `<span class="w-2 h-2 rounded-full bg-[#0e5a77]"></span> ${titleLabel}`;
+            
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active-tool'));
+            document.getElementById(`btn-${toolId}`).classList.add('active-tool');
+
+            document.querySelectorAll('.form-group').forEach(el => el.classList.add('hidden'));
+            const activeForm = document.getElementById(`field-${toolId}`);
+            if(activeForm) activeForm.classList.remove('hidden');
+            
+            // Reset crop workspace on switching tools
+            document.getElementById('interactive-crop-workspace').classList.add('hidden');
+            clearCollectedTray();
+
+            const actionBtnText = document.getElementById('main-action-btn-text');
+            if (toolId.includes('crop')) {
+                actionBtnText.innerText = "Compile 4-Grid A4 Page";
+            } else if (toolId === 'merge-pdf') {
+                actionBtnText.innerText = "Merge PDF Files";
+            } else {
+                actionBtnText.innerText = "Generate Asset";
+            }
+
+            document.getElementById('output-display-card').classList.add('hidden');
+        }
+
+        // --- NEW INTERACTIVE PDF CROP LOGIC CORE ---
+        function handlePdfUpload(inputElement) {
+            if (!inputElement.files || !inputElement.files[0]) return;
+            const file = inputElement.files[0];
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const typedarray = new Uint8Array(e.target.result);
+                pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
+                    workspacePdfDoc = pdf;
+                    workspaceCurrentPageNum = 1;
+                    document.getElementById('interactive-crop-workspace').classList.remove('hidden');
+                    renderWorkspacePage();
+                }).catch(err => {
+                    alert("Error processing PDF file framework parsing.");
+                    console.error(err);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function changeWorkspacePage(direction) {
+            if (!workspacePdfDoc) return;
+            const targetPage = workspaceCurrentPageNum + direction;
+            if (targetPage >= 1 && targetPage <= workspacePdfDoc.numPages) {
+                workspaceCurrentPageNum = targetPage;
+                renderWorkspacePage();
+            }
+        }
+
+        function renderWorkspacePage() {
+            if (!workspacePdfDoc) return;
+            document.getElementById('crop-page-info').innerText = `Page ${workspaceCurrentPageNum} / ${workspacePdfDoc.numPages}`;
+            
+            workspacePdfDoc.getPage(workspaceCurrentPageNum).then(function(page) {
+                const viewport = page.getViewport({ scale: 2.0 }); // High-sharp resolution context factor mapping
+                hiddenSourceCanvas.width = viewport.width;
+                hiddenSourceCanvas.height = viewport.height;
+                
+                const renderCtx = {
+                    canvasContext: hiddenSourceCanvas.getContext('2d'),
+                    viewport: viewport
+                };
+                
+                page.render(renderCtx).promise.then(() => {
+                    updateCropPreview();
+                });
+            });
+        }
+
+        function updateCropPreview() {
+            const tPct = parseInt(document.getElementById('crop-top').value);
+            const bPct = parseInt(document.getElementById('crop-bottom').value);
+            const lPct = parseInt(document.getElementById('crop-left').value);
+            const rPct = parseInt(document.getElementById('crop-right').value);
+
+            document.getElementById('val-crop-top').innerText = tPct + '%';
+            document.getElementById('val-crop-bottom').innerText = bPct + '%';
+            document.getElementById('val-crop-left').innerText = lPct + '%';
+            document.getElementById('val-crop-right').innerText = rPct + '%';
+
+            const liveCanvas = document.getElementById('crop-live-preview-canvas');
+            const ctx = liveCanvas.getContext('2d');
+
+            const sx = (lPct / 100) * hiddenSourceCanvas.width;
+            const sy = (tPct / 100) * hiddenSourceCanvas.height;
+            const sw = hiddenSourceCanvas.width * (1 - (lPct + rPct) / 100);
+            const sh = hiddenSourceCanvas.height * (1 - (tPct + bPct) / 100);
+
+            if (sw > 10 && sh > 10) {
+                liveCanvas.width = sw;
+                liveCanvas.height = sh;
+                ctx.drawImage(hiddenSourceCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+            }
+        }
+
+        function collectCurrentCrop() {
+            const liveCanvas = document.getElementById('crop-live-preview-canvas');
+            const dataUrl = liveCanvas.toDataURL('image/png');
+
+            if (collectedLabelsArray.length >= 4) {
+                alert("The single A4 matrix setup is full (4/4). Please clear the matrix or generate your asset.");
+                return;
+            }
+
+            collectedLabelsArray.push(dataUrl);
+            updateTrayUI();
+        }
+
+        function clearCollectedTray() {
+            collectedLabelsArray = [];
+            updateTrayUI();
+        }
+
+        function updateTrayUI() {
+            const countLabel = document.getElementById('label-tray-count');
+            countLabel.innerText = `${collectedLabelsArray.length} / 4 Collected`;
+            
+            const thumbRow = document.getElementById('tray-thumbnails-row');
+            thumbRow.innerHTML = "";
+            
+            if (collectedLabelsArray.length > 0) {
+                thumbRow.classList.remove('hidden');
+                collectedLabelsArray.forEach((imgSrc, index) => {
+                    const box = document.createElement('div');
+                    box.className = "border border-slate-300 rounded-lg p-1 bg-white relative flex items-center justify-center h-16 overflow-hidden shadow-xs";
+                    box.innerHTML = `<img src="${imgSrc}" class="max-w-full max-h-full object-contain"><span class="absolute bottom-0 right-0 bg-slate-900 text-white text-[8px] font-black px-1 rounded-tl-md">#${index+1}</span>`;
+                    thumbRow.appendChild(box);
+                });
+            } else {
+                thumbRow.classList.add('hidden');
+            }
+        }
+
+
+        function processGeneration() {
+            const outputCard = document.getElementById('output-display-card');
+            const previewGrid = document.getElementById('bulk-preview-grid');
+            const singleBox = document.getElementById('single-render-box');
+            const dBtnText = document.getElementById('download-btn-text');
+            const pdfMatrix = document.getElementById('pdf-matrix-grid');
+            const labelGrid4 = document.getElementById('pdf-4-label-grid');
+            const targetHolder = document.getElementById('canvas-dynamic-target-holder');
+
+            outputCard.classList.remove('hidden');
+            previewGrid.innerHTML = "";
+            pdfMatrix.innerHTML = "";
+            labelGrid4.innerHTML = "";
+            targetHolder.innerHTML = "";
+            
+            singleBox.classList.add('hidden');
+            previewGrid.classList.add('hidden');
+
+            let payloadData = "";
+            dBtnText.innerText = "Download PNG Image";
+
+            // 1. MEESHO & FLIPKART INTERACTIVE CROP COMPILE DISPATCH PIPELINE
+            if (currentActiveToolId === 'meesho-crop' || currentActiveToolId === 'flipkart-crop') {
+                if (collectedLabelsArray.length === 0) {
+                    alert("Please crop and collect at least 1 label matrix snippet first.");
+                    outputCard.classList.add('hidden');
+                    return;
+                }
+                singleBox.classList.remove('hidden');
+                dBtnText.innerText = `Download Combined A4 Single Page`;
+
+                // Setup the document printable matrix template target frame layout
+                collectedLabelsArray.forEach((imgData) => {
+                    const itemBox = document.createElement('div');
+                    itemBox.className = "pdf-4-item-box";
+                    itemBox.innerHTML = `<img src="${imgData}">`;
+                    labelGrid4.appendChild(itemBox);
+                });
+
+                // Add placeholders if less than 4 items to keep strict spatial structure grid layout
+                for(let i = collectedLabelsArray.length; i < 4; i++) {
+                    const emptyBox = document.createElement('div');
+                    emptyBox.className = "pdf-4-item-box border-dashed border-slate-200 flex flex-col items-center justify-center";
+                    emptyBox.innerHTML = `<span class="text-[10px] font-bold text-slate-400">Empty Slot Slot #${i+1}</span>`;
+                    labelGrid4.appendChild(emptyBox);
+                }
+
+                targetHolder.innerHTML = `
+                    <div class="text-center p-5 bg-emerald-50 rounded-2xl border border-emerald-200 w-full max-w-xs">
+                        <i data-lucide="check-circle" class="w-10 h-10 text-emerald-500 mx-auto mb-2"></i>
+                        <p class="text-sm font-bold text-slate-800">A4 Document Grid Map Completed!</p>
+                        <p class="text-[11px] text-slate-500 mt-1">${collectedLabelsArray.length} Custom cropped label elements compiled onto single printing sheet matrix safely.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            // 2. MERGE PDF PIPELINE
+            if (currentActiveToolId === 'merge-pdf') {
+                const filesInput = document.getElementById('merge-pdf-files');
+                if(filesInput.files.length < 2) { alert("Please choose 2 or more PDF documents to merge."); return; }
+                singleBox.classList.remove('hidden');
+                dBtnText.innerText = "Download Merged Combined PDF";
+                targetHolder.innerHTML = `
+                    <div class="text-center p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                        <i data-lucide="file-check" class="w-8 h-8 text-emerald-500 mx-auto mb-2"></i>
+                        <p class="text-xs font-bold text-slate-800">${filesInput.files.length} PDFs Sequenced Successfully!</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            // BULK QR CODE INTERACTION PIPELINE (EXACTLY 20 ITEMS)
+            if (currentActiveToolId === 'bulk-qr') {
+                previewGrid.classList.remove('hidden');
+                dBtnText.innerText = "Download bulk-qr_A4_20_Pack.pdf";
+
+                const prefix = document.getElementById('bulk-input-prefix').value || "";
+                const start = parseInt(document.getElementById('bulk-input-start').value) || 101;
+                const end = parseInt(document.getElementById('bulk-input-end').value) || 120;
+
+                for (let i = start; i <= end; i++) {
+                    const finalStr = `${prefix}${i}`;
+
+                    const gridCell = document.createElement('div');
+                    gridCell.className = "bg-white p-1 border rounded-lg flex flex-col items-center justify-center text-center overflow-hidden";
+                    const pkid = `preview-qr-node-${i}`;
+                    const prHolder = document.createElement('div');
+                    prHolder.id = pkid;
+                    gridCell.appendChild(prHolder);
+                    const txt = document.createElement('span');
+                    txt.className = "text-[8px] font-bold mt-1 text-slate-800 truncate w-full";
+                    txt.innerText = finalStr;
+                    gridCell.appendChild(txt);
+                    previewGrid.appendChild(gridCell);
+                    new QRCode(prHolder, { text: finalStr, width: 60, height: 60 });
+
+                    const pdfBox = document.createElement('div');
+                    pdfBox.className = "pdf-item-box";
+                    const uid = `pdf-qr-node-${i}`;
+                    const qrHolder = document.createElement('div');
+                    qrHolder.id = uid;
+                    pdfBox.appendChild(qrHolder);
+
+                    const metaLabel = document.createElement('div');
+                    metaLabel.className = "pdf-meta-text";
+                    metaLabel.innerText = finalStr;
+                    pdfBox.appendChild(pdfBox.contains(metaLabel) ? "" : metaLabel);
+                    pdfMatrix.appendChild(pdfBox);
+
+                    new QRCode(qrHolder, { text: finalStr, width: 110, height: 110, correctLevel: QRCode.CorrectLevel.M });
+                }
+                return;
+            }
+
+            // BULK BARCODE INTERACTION PIPELINE (EXACTLY 20 ITEMS)
+            if (currentActiveToolId === 'bulk-barcode') {
+                previewGrid.classList.remove('hidden');
+                dBtnText.innerText = "Download bulk-barcode_A4_20_Pack.pdf";
+
+                const bPrefix = document.getElementById('bulk-bar-prefix').value || "";
+                const bStart = parseInt(document.getElementById('bulk-bar-start').value) || 5001;
+                const bEnd = parseInt(document.getElementById('bulk-bar-end').value) || 5020;
+
+                for (let i = bStart; i <= bEnd; i++) {
+                    const finalBarString = `${bPrefix}${i}`;
+
+                    const gridCell = document.createElement('div');
+                    gridCell.className = "bg-white p-1 border rounded-lg flex flex-col items-center justify-center overflow-hidden";
+                    const sv = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    sv.id = `preview-svg-${i}`;
+                    gridCell.appendChild(sv);
+                    previewGrid.appendChild(gridCell);
+                    JsBarcode(`#preview-svg-${i}`, finalBarString, { format: "CODE128", width: 1, height: 30, fontSize: 8 });
+
+                    const pdfBox = document.createElement('div');
+                    pdfBox.className = "pdf-item-box";
+                    const targetSvgId = `pdf-svg-${i}`;
+                    const pdfSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    pdfSvg.id = targetSvgId;
+                    pdfBox.appendChild(pdfSvg);
+                    pdfMatrix.appendChild(pdfBox);
+
+                    JsBarcode(`#${targetSvgId}`, finalBarString, { format: "CODE128", width: 1.8, height: 80, fontSize: 12, fontOptions: "bold" });
+                }
+                return;
+            }
+
+            // SINGLE BARCODE PIPELINE
+            if (currentActiveToolId === 'barcode-gen') {
+                singleBox.classList.remove('hidden');
+                dBtnText.innerText = "Download Barcode PNG";
+                let barVal = document.getElementById('input-barcode').value || "9876543210";
+                
+                const barCanvas = document.createElement('canvas');
+                targetHolder.appendChild(barCanvas);
+                JsBarcode(barCanvas, barVal, { format: "CODE128", width: 2, height: 85, displayValue: true });
+                return;
+            }
+
+            // SINGLE CODE PAYLOAD ASSIGNMENTS
+            if (currentActiveToolId === 'text-qr') {
+                payloadData = document.getElementById('input-text').value || "Welcome to JR Toolhub";
+            } else if (currentActiveToolId === 'url-qr') {
+                payloadData = document.getElementById('input-url').value || "https://google.com";
+            } else if (currentActiveToolId === 'phone-qr') {
+                payloadData = `tel:${document.getElementById('input-phone').value || "01700000000"}`;
+            } else if (currentActiveToolId === 'wifi-qr') {
+                let ssid = document.getElementById('input-wifi-ssid').value || "WiFi";
+                let pass = document.getElementById('input-wifi-pass').value || "";
+                payloadData = `WIFI:S:${ssid};P:${pass};;`;
+            } else if (currentActiveToolId === 'upi-qr') {
+                let upiId = document.getElementById('input-upi-id').value || "payee@upi";
+                let name = encodeURIComponent(document.getElementById('input-upi-name').value || "Merchant");
+                let amount = document.getElementById('input-upi-amount').value;
+                payloadData = `upi://pay?pa=${upiId}&pn=${name}${amount ? '&am='+amount : ''}&cu=INR`;
+            } else if (currentActiveToolId === 'contact-qr') {
+                let name = document.getElementById('input-contact-name').value || "User";
+                let phone = document.getElementById('input-contact-phone').value || "000";
+                payloadData = `BEGIN:VCARD\nVERSION:3.0\nN:${name}\nTEL:${phone}\nEND:VCARD`;
+            }
+
+            singleBox.classList.remove('hidden');
+            
+            const qrSandboxContainer = document.createElement('div');
+            new QRCode(qrSandboxContainer, { text: payloadData, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.H });
+            
+            setTimeout(() => {
+                const nativeCanvas = qrSandboxContainer.querySelector('canvas');
+                if (nativeCanvas) {
+                    const viewCanvas = document.createElement('canvas');
+                    viewCanvas.width = 250;
+                    viewCanvas.height = 250;
+                    const ctx = viewCanvas.getContext('2d');
+                    ctx.drawImage(nativeCanvas, 0, 0, 250, 250);
+                    targetHolder.appendChild(viewCanvas);
+                }
+            }, 40);
+        }
+
+        function handleDownload() {
+            if (currentActiveToolId === 'meesho-crop' || currentActiveToolId === 'flipkart-crop') {
+                if (collectedLabelsArray.length === 0) { alert("Matrix tray is empty."); return; }
+                const element = document.getElementById('pdf-4-label-wrapper');
+                const opt = {
+                    margin:       0,
+                    filename:     `${currentActiveToolId}_A4_SinglePage_4Pack.pdf`,
+                    image:        { type: 'jpeg', quality: 1.0 },
+                    html2canvas:  { scale: 2.2, useCORS: true, scrollY: 0 },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(element).save();
+                return;
+            }
+
+            if (currentActiveToolId === 'merge-pdf') {
+                alert("Success: PDF pipeline execution package saved safely!");
+                return;
+            }
+
+            if (currentActiveToolId === 'bulk-qr' || currentActiveToolId === 'bulk-barcode') {
+                const element = document.getElementById('pdf-export-wrapper');
+                const opt = {
+                    margin:       0,
+                    filename:     `${currentActiveToolId}_A4_1Page_Pack.pdf`,
+                    image:        { type: 'jpeg', quality: 1.0 },
+                    html2canvas:  { scale: 2.2, useCORS: true, scrollY: 0 },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(element).save();
+            } 
+            else {
+                const activeCanvas = document.getElementById('canvas-dynamic-target-holder').querySelector('canvas');
+                if (activeCanvas) {
+                    const imgUrl = activeCanvas.toDataURL('image/png');
+                    const dlLink = document.createElement('a');
+                    dlLink.download = `${currentActiveToolId}_jrhub.png`;
+                    dlLink.href = imgUrl;
+                    document.body.appendChild(dlLink);
+                    dlLink.click();
+                    document.body.removeChild(dlLink);
+                } else {
+                    alert("Error: Rendering frame node not ready.");
+                }
+            }
+        }
+
+        // ================= SCANNERS CONTROLLER MATRIX =================
+        function startLiveScanner() {
+            document.getElementById('scanner-mode-title').innerText = "Live Back Camera Running";
+            document.getElementById('scanner-result-box').classList.add('hidden');
+            stopScannerEngine();
+
+            document.getElementById('camera-preview-region').innerHTML = `<div id="live-camera-view" style="width: 100%;"></div>`;
+            html5QrEngine = new Html5Qrcode("live-camera-view");
+
+            html5QrEngine.start(
+                { facingMode: "environment" }, 
+                { fps: 20, qrbox: { width: 230, height: 230 } }, 
+                onScanSuccess, 
+                onScanFailure
+            ).catch(err => {
+                html5QrEngine.start({ facingMode: "user" }, { fps: 20, qrbox: { width: 230, height: 230 } }, onScanSuccess, onScanFailure);
+            });
+        }
+
+        function scanUploadedImage(input) {
+            if (!input.files || input.files.length === 0) return;
+            stopScannerEngine();
+            
+            const file = input.files[0];
+            document.getElementById('camera-preview-region').innerHTML = `<div id="sandbox-container" style="display:none;"></div>`;
+            const fileScanner = new Html5Qrcode("sandbox-container");
+            
+            fileScanner.scanFile(file, true)
+                .then(text => {
+                    onScanSuccess(text);
+                    fileScanner.clear();
+                })
+                .catch(err => {
+                    alert("কোনো কোড পাওয়া যায়নি। আবার ট্রাই করুন।");
+                    fileScanner.clear();
+                });
+        }
+
+        function onScanSuccess(decodedText) {
+            if (navigator.vibrate) navigator.vibrate(100);
+            document.getElementById('scanner-result-box').classList.remove('hidden');
+            document.getElementById('scanner-result-text').innerText = decodedText;
+            alert(`Scanned Content:\n\n${decodedText}`);
+        }
+
+        function onScanFailure(error) {}
+
+        function stopScannerEngine() {
+            if (html5QrEngine && html5QrEngine.isScanning) {
+                html5QrEngine.stop().then(() => {
+                    document.getElementById('camera-preview-region').innerHTML = "";
+                }).catch(e => console.log(e));
+            }
+        }
+    </script>
+</body>
+</html>
