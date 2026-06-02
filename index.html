@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JR❤️TOOLHUB | Premium QR & Barcode Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body { background: linear-gradient(145deg, #f8fafc 0%, #eef2ff 100%); font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(25deg); }
+            20% { transform: translateX(100%) rotate(25deg); }
+            100% { transform: translateX(100%) rotate(25deg); }
+        }
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(12px);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .loading-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .loading-card {
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
+            border-radius: 48px;
+            padding: 36px 52px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            transform: scale(0.9);
+            transition: transform 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .loading-overlay.active .loading-card { transform: scale(1); }
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #0e5a77;
+            border-right: 4px solid #14b8a6;
+            border-radius: 50%;
+            animation: spin 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            margin: 0 auto 20px;
+        }
+        .tool-premium {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.7);
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            cursor: pointer;
+        }
+        .tool-premium:active { transform: scale(0.96); background: white; }
+        .active-premium {
+            background: linear-gradient(135deg, #0e5a77 0%, #1e7a9a 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 10px 25px -5px rgba(14,90,119,0.5);
+        }
+        .active-premium i, .active-premium span { color: white !important; }
+        .preview-grid-160 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 28px;
+        }
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-shine::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(115deg, rgba(255,255,255,0) 10%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 90%);
+            transform: rotate(25deg);
+            animation: shine 3s infinite;
+        }
+        .fade-up { animation: fadeInUp 0.4s ease-out; }
+        .crop-slider { accent-color: #0e5a77; }
+    </style>
+</head>
+<body class="pb-24">
+
+<!-- Premium Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-card">
+        <div class="spinner"></div>
+        <div class="text-sm font-bold text-slate-700 mt-3 tracking-wide">PROCESSING</div>
+        <div class="text-[10px] text-slate-400 mt-1 font-mono">JR❤️TOOLHUB Secure Engine</div>
+    </div>
+</div>
+
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-white/40 px-5 py-3 flex items-center justify-between shadow-md">
+    <div class="flex items-center gap-3">
+        <div class="bg-gradient-to-br from-rose-500 to-amber-500 p-2.5 rounded-2xl shadow-lg">
+            <i data-lucide="heart" class="w-5 h-5 text-white fill-white"></i>
+        </div>
+        <div>
+            <h1 class="text-2xl font-black tracking-tight bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                JR<span class="text-rose-500">❤️</span>TOOLHUB
+            </h1>
+            <p class="text-[9px] font-semibold text-slate-400 -mt-0.5">Professional QR & Barcode Suite</p>
+        </div>
+    </div>
+    <div class="flex gap-2">
+        <span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full">Secure & Fast</span>
+    </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-4 mt-6 space-y-6">
+    <!-- Tab Buttons -->
+    <div class="grid grid-cols-2 gap-3 bg-white/60 p-1.5 rounded-3xl shadow-sm backdrop-blur-sm">
+        <button onclick="switchMainTab('generate')" id="tab-gen" class="py-3 rounded-2xl text-center font-extrabold transition-all duration-200 tab-active bg-[#0e5a77] text-white shadow-md">✨ Generator Hub</button>
+        <button onclick="switchMainTab('scan')" id="tab-scan" class="py-3 rounded-2xl text-center font-bold text-slate-600 transition-all">📷 Scanner</button>
+    </div>
+
+    <!-- GENERATOR VIEW -->
+    <div id="generatorView" class="space-y-5 fade-up">
+        <!-- 17 Professional Tools Grid -->
+        <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+            <div onclick="selectTool('textQR')" id="btn-textQR" class="tool-premium active-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="align-left" class="w-5 h-5 mx-auto"></i><span class="text-[11px] font-bold block mt-1.5">Text QR</span></div>
+            <div onclick="selectTool('urlQR')" id="btn-urlQR" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="link" class="w-5 h-5 mx-auto text-emerald-600"></i><span class="text-[11px] font-bold block mt-1.5">URL QR</span></div>
+            <div onclick="selectTool('upiQR')" id="btn-upiQR" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="wallet" class="w-5 h-5 mx-auto text-purple-600"></i><span class="text-[11px] font-bold block mt-1.5">UPI QR</span></div>
+            <div onclick="selectTool('contactQR')" id="btn-contactQR" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="user" class="w-5 h-5 mx-auto text-orange-600"></i><span class="text-[11px] font-bold block mt-1.5">Contact QR</span></div>
+            <div onclick="selectTool('wifiQR')" id="btn-wifiQR" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="wifi" class="w-5 h-5 mx-auto text-cyan-600"></i><span class="text-[11px] font-bold block mt-1.5">WiFi QR</span></div>
+            <div onclick="selectTool('mobileQR')" id="btn-mobileQR" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="phone" class="w-5 h-5 mx-auto text-pink-600"></i><span class="text-[11px] font-bold block mt-1.5">Mobile QR</span></div>
+            <div onclick="selectTool('barcodeGen')" id="btn-barcodeGen" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="barcode" class="w-5 h-5 mx-auto text-indigo-600"></i><span class="text-[11px] font-bold block mt-1.5">Barcode</span></div>
+            <div onclick="selectTool('bulkQR')" id="btn-bulkQR" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="layers" class="w-5 h-5 mx-auto text-rose-600"></i><span class="text-[11px] font-bold block mt-1.5">Bulk QR (160)</span></div>
+            <div onclick="selectTool('bulkBarcode')" id="btn-bulkBarcode" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="grid" class="w-5 h-5 mx-auto text-slate-700"></i><span class="text-[11px] font-bold block mt-1.5">Bulk Barcode</span></div>
+            <div onclick="selectTool('singlePDF')" id="btn-singlePDF" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="file" class="w-5 h-5 mx-auto text-sky-600"></i><span class="text-[11px] font-bold block mt-1.5">Single PDF</span></div>
+            <div onclick="selectTool('mergePDF')" id="btn-mergePDF" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="file-plus" class="w-5 h-5 mx-auto text-emerald-600"></i><span class="text-[11px] font-bold block mt-1.5">Merge PDF</span></div>
+            <div onclick="selectTool('imageCompressor')" id="btn-imageCompressor" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="image" class="w-5 h-5 mx-auto text-amber-600"></i><span class="text-[11px] font-bold block mt-1.5">Compressor</span></div>
+            <div onclick="selectTool('imageToPDF')" id="btn-imageToPDF" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="file-image" class="w-5 h-5 mx-auto text-violet-600"></i><span class="text-[11px] font-bold block mt-1.5">Image→PDF</span></div>
+            <div onclick="selectTool('pdfToImage')" id="btn-pdfToImage" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="file-output" class="w-5 h-5 mx-auto text-rose-600"></i><span class="text-[11px] font-bold block mt-1.5">PDF→Image</span></div>
+            <div onclick="selectTool('pdfCustomize')" id="btn-pdfCustomize" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="crop" class="w-5 h-5 mx-auto text-slate-600"></i><span class="text-[11px] font-bold block mt-1.5">PDF Trim</span></div>
+            <div onclick="selectTool('meeshoCrop')" id="btn-meeshoCrop" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="scissors" class="w-5 h-5 mx-auto text-orange-500"></i><span class="text-[11px] font-bold block mt-1.5">Meesho Crop</span></div>
+            <div onclick="selectTool('flipkartCrop')" id="btn-flipkartCrop" class="tool-premium p-2.5 rounded-2xl text-center transition-all"><i data-lucide="crop" class="w-5 h-5 mx-auto text-blue-500"></i><span class="text-[11px] font-bold block mt-1.5">Flipkart Crop</span></div>
+        </div>
+
+        <!-- Input Card -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-6 transition-all">
+            <h3 id="toolHeader" class="font-extrabold text-slate-800 flex items-center gap-2 text-lg mb-5 pb-2 border-b border-slate-100">
+                <span class="w-3 h-3 rounded-full bg-gradient-to-r from-[#0e5a77] to-cyan-500"></span> 
+                Text QR · Generator
+            </h3>
+            <div id="dynamicInputArea" class="space-y-4"></div>
+            <div class="flex flex-wrap gap-3 mt-7">
+                <button id="actionGenerateBtn" onclick="executeWithLoading()" class="flex-1 bg-gradient-to-r from-[#0e5a77] to-[#1e7e9e] text-white py-3.5 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 btn-shine transition-all hover:scale-[1.02]">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> Generate
+                </button>
+                <button id="downloadBtn" onclick="handleDownload()" class="flex-1 bg-slate-800 text-white py-3.5 rounded-2xl font-bold shadow-md hidden items-center justify-center gap-2">
+                    <i data-lucide="download" class="w-4 h-4"></i> Download
+                </button>
+            </div>
+        </div>
+
+        <!-- Preview Area -->
+        <div id="previewArea" class="bg-white/80 rounded-3xl border-2 border-dashed border-indigo-200 p-5 hidden flex-col items-center space-y-4 backdrop-blur-sm">
+            <div class="text-[11px] font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-1">
+                <i data-lucide="eye" class="w-3 h-3"></i> Live Preview
+            </div>
+            <div id="previewContainer" class="flex justify-center flex-wrap gap-4"></div>
+            <div id="multiFormatDownload" class="flex flex-wrap justify-center gap-3 mt-2 hidden">
+                <button onclick="downloadSingleAs('png')" class="px-5 py-2 bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition">PNG</button>
+                <button onclick="downloadSingleAs('jpg')" class="px-5 py-2 bg-green-600 text-white rounded-xl text-xs font-bold shadow-md">JPG</button>
+                <button onclick="downloadSingleAs('pdf')" class="px-5 py-2 bg-red-500 text-white rounded-xl text-xs font-bold shadow-md">PDF</button>
+            </div>
+            <div id="bulkDownloadOptions" class="flex gap-3 hidden">
+                <button onclick="downloadBulkAsPDF()" class="px-5 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold shadow-lg">Multi-Page PDF</button>
+                <button onclick="downloadBulkAsZip()" class="px-5 py-2 bg-amber-600 text-white rounded-xl text-xs font-bold shadow-lg">ZIP + PDF Bundle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCANNER VIEW -->
+    <div id="scannerView" class="hidden space-y-5 fade-up">
+        <div class="grid grid-cols-2 gap-3">
+            <button onclick="startLiveCamera()" class="bg-gradient-to-r from-[#0e5a77] to-[#1488b8] text-white p-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2">
+                <i data-lucide="camera" class="w-5 h-5"></i> Live Camera
+            </button>
+            <label class="bg-amber-500 text-white p-4 rounded-2xl font-bold text-center cursor-pointer shadow-lg flex items-center justify-center gap-2">
+                <i data-lucide="image-plus"></i> Upload Image
+                <input type="file" id="galleryScanInput" accept="image/*" class="hidden" onchange="scanFromGallery(this)">
+            </label>
+        </div>
+        <div class="bg-black/80 rounded-3xl p-3 min-h-[320px] flex flex-col items-center justify-center shadow-2xl">
+            <div id="cameraPreviewRegion" class="w-full rounded-xl overflow-hidden"></div>
+            <div id="scanResultArea" class="mt-4 w-full bg-slate-800/90 p-4 rounded-xl hidden backdrop-blur">
+                <span class="text-amber-400 text-[11px] font-bold">✓ SCANNED DATA</span>
+                <p id="scannedText" class="text-white text-sm break-all font-mono mt-1"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden PDF Containers -->
+    <div id="hiddenBulkPDF" style="position: absolute; left: -9999px; top: -9999px;"><div id="bulkPrintGrid" class="grid grid-cols-4 gap-3 p-4 bg-white" style="width: 210mm;"></div></div>
+</main>
+
+<script>
+    // ---------- GLOBAL STATE ----------
+    let currentTool = 'textQR';
+    let currentSingleDataURL = null;
+    let bulkItemsArray = [];
+    let scannerInstance = null;
+
+    // Loading Controller
+    function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
+    function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
+
+    async function executeWithLoading() {
+        showLoading();
+        setTimeout(async () => {
+            try {
+                await executeGeneration();
+            } catch (err) {
+                console.error(err);
+                alert("Processing error. Please try again.");
+            }
+            hideLoading();
+        }, 200);
+    }
+
+    // Tool Configurations (English Only)
+    const toolConfig = {
+        textQR: { title: 'Text QR · Generator', fields: [{type:'text', id:'txtContent', label:'📝 Enter your text / message', default:'Welcome to JR❤️TOOLHUB — Premium Secure Suite'}] },
+        urlQR: { title: 'URL / Website QR', fields: [{type:'url', id:'urlContent', label:'🔗 Website URL', default:'https://jrtoolhub.com'}] },
+        upiQR: { title: 'UPI Payment QR', fields: [{type:'text', id:'upiId', label:'UPI ID', default:'merchant@okhdfcbank'},{type:'text', id:'upiName', label:'Payee Name', default:'JR Merchant'},{type:'number', id:'upiAmount', label:'Amount (optional)'}] },
+        contactQR: { title: 'vCard Contact QR', fields: [{type:'text', id:'contactName', label:'Full Name', default:'John Rakesh'},{type:'tel', id:'contactPhone', label:'Phone Number', default:'+8801711111111'}] },
+        wifiQR: { title: 'WiFi Configuration', fields: [{type:'text', id:'wifiSSID', label:'Network SSID', default:'JR_HighSpeed'},{type:'password', id:'wifiPass', label:'Password', default:'secure@123'}] },
+        mobileQR: { title: 'Mobile Number QR', fields: [{type:'tel', id:'mobileNum', label:'Phone Number', default:'+8801711111111'}] },
+        barcodeGen: { title: 'Barcode Generator', fields: [{type:'text', id:'barValue', label:'Barcode Data', default:'JR9876543210'}] },
+        bulkQR: { title: 'Bulk QR (Max 160)', fields: [{type:'text', id:'bulkPrefix', label:'Prefix', default:'JR-'},{type:'number', id:'bulkStart', default:1},{type:'number', id:'bulkEnd', default:160}] },
+        bulkBarcode: { title: 'Bulk Barcode (160)', fields: [{type:'text', id:'bulkBarPrefix', label:'Prefix', default:'BAR-'},{type:'number', id:'bulkBarStart', default:5001},{type:'number', id:'bulkBarEnd', default:5160}] },
+        singlePDF: { title: 'Single PDF Viewer', fields: [{type:'file', id:'singlePDFFile', accept:'.pdf', label:'Select PDF'}] },
+        mergePDF: { title: 'Merge PDF Files', fields: [{type:'file', id:'mergeFiles', multiple:true, accept:'.pdf', label:'Select 2+ PDFs'}] },
+        imageCompressor: { title: 'Image Compressor', fields: [{type:'file', id:'compressImg', accept:'image/*', label:'Select Image'},{type:'range', id:'compressQuality', min:0.1, max:1, step:0.05, label:'Quality'}] },
+        imageToPDF: { title: 'Image to PDF', fields: [{type:'file', id:'imgToPdfInput', accept:'image/*', multiple:true, label:'Select Images'}] },
+        pdfToImage: { title: 'PDF to Image', fields: [{type:'file', id:'pdf2ImgInput', accept:'.pdf', label:'Upload PDF'}] },
+        pdfCustomize: { title: 'PDF Border Trimmer', fields: [{type:'file', id:'customPdfFile', accept:'.pdf', label:'Upload PDF'}] },
+        meeshoCrop: { title: 'Meesho Label Crop', fields: [{type:'file', id:'meeshoPdf', accept:'.pdf', label:'Upload Meesho PDF'}] },
+        flipkartCrop: { title: 'Flipkart Label Crop', fields: [{type:'file', id:'flipkartPdf', accept:'.pdf', label:'Upload Flipkart PDF'}] }
+    };
+
+    function renderInputFields() {
+        const cfg = toolConfig[currentTool];
+        document.getElementById('toolHeader').innerHTML = `<span class="w-3 h-3 rounded-full bg-gradient-to-r from-[#0e5a77] to-cyan-500"></span> ${cfg.title}`;
+        const container = document.getElementById('dynamicInputArea');
+        container.innerHTML = '';
+        cfg.fields.forEach(f => {
+            const div = document.createElement('div');
+            div.className = 'space-y-1.5';
+            if(f.type === 'file') {
+                div.innerHTML = `<label class="text-xs font-bold text-slate-600">${f.label}</label><input type="file" id="${f.id}" accept="${f.accept}" ${f.multiple ? 'multiple' : ''} class="w-full p-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50">`;
+            } else if(f.type === 'range') {
+                div.innerHTML = `<label class="text-xs font-bold">${f.label}: <span id="${f.id}Val">0.8</span></label><input type="range" id="${f.id}" min="${f.min}" max="${f.max}" step="${f.step}" value="0.8" class="w-full crop-slider" oninput="document.getElementById('${f.id}Val').innerText=this.value">`;
+            } else {
+                div.innerHTML = `<label class="text-xs font-bold text-slate-700">${f.label}</label><input type="${f.type}" id="${f.id}" value="${f.default || ''}" placeholder="${f.placeholder || ''}" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#0e5a77] transition">`;
+            }
+            container.appendChild(div);
+        });
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    window.selectTool = (toolId) => {
+        currentTool = toolId;
+        document.querySelectorAll('[id^="btn-"]').forEach(btn => btn.classList.remove('active-premium'));
+        const activeBtn = document.getElementById(`btn-${toolId}`);
+        if(activeBtn) activeBtn.classList.add('active-premium');
+        renderInputFields();
+        document.getElementById('previewArea').classList.add('hidden');
+        document.getElementById('downloadBtn').classList.add('hidden');
+        document.getElementById('multiFormatDownload').classList.add('hidden');
+        document.getElementById('bulkDownloadOptions').classList.add('hidden');
+        bulkItemsArray = [];
+        currentSingleDataURL = null;
+    };
+
+    function getQRPayload() {
+        if(currentTool === 'textQR') {
+            let val = document.getElementById('txtContent')?.value;
+            if(!val || val.trim() === "") return "JR❤️TOOLHUB - Professional Toolkit";
+            return val;
+        }
+        if(currentTool === 'urlQR') return document.getElementById('urlContent')?.value || "https://jrtoolhub.com";
+        if(currentTool === 'upiQR') { 
+            let id = document.getElementById('upiId')?.value || "pay@upi";
+            let name = encodeURIComponent(document.getElementById('upiName')?.value || "Merchant");
+            let amt = document.getElementById('upiAmount')?.value;
+            return `upi://pay?pa=${id}&pn=${name}${amt ? '&am='+amt : ''}&cu=INR`;
+        }
+        if(currentTool === 'contactQR') { 
+            let n = document.getElementById('contactName')?.value || "User";
+            let p = document.getElementById('contactPhone')?.value || "0000000000";
+            return `BEGIN:VCARD\nVERSION:3.0\nFN:${n}\nTEL:${p}\nEND:VCARD`;
+        }
+        if(currentTool === 'wifiQR') return `WIFI:S:${document.getElementById('wifiSSID')?.value || "WiFi"};P:${document.getElementById('wifiPass')?.value || ""};;`;
+        if(currentTool === 'mobileQR') return `tel:${document.getElementById('mobileNum')?.value || "+8801700000000"}`;
+        if(currentTool === 'barcodeGen') return document.getElementById('barValue')?.value || "JR123456";
+        return "JR❤️TOOLHUB";
+    }
+
+    async function executeGeneration() {
+        const previewArea = document.getElementById('previewArea');
+        const previewContainer = document.getElementById('previewContainer');
+        previewContainer.innerHTML = '';
+        previewArea.classList.remove('hidden');
+        document.getElementById('multiFormatDownload').classList.add('hidden');
+        document.getElementById('bulkDownloadOptions').classList.add('hidden');
+
+        // Bulk QR / Barcode
+        if(currentTool === 'bulkQR' || currentTool === 'bulkBarcode') {
+            let start = parseInt(document.getElementById(currentTool === 'bulkQR' ? 'bulkStart' : 'bulkBarStart')?.value || 1);
+            let end = parseInt(document.getElementById(currentTool === 'bulkQR' ? 'bulkEnd' : 'bulkBarEnd')?.value || 160);
+            if(end - start + 1 > 160) { alert("Maximum 160 items supported"); end = start + 159; }
+            let prefix = document.getElementById(currentTool === 'bulkQR' ? 'bulkPrefix' : 'bulkBarPrefix')?.value || '';
+            bulkItemsArray = [];
+            previewContainer.className = 'preview-grid-160';
+            
+            for(let i = start; i <= end; i++) {
+                let textData = `${prefix}${i}`;
+                let div = document.createElement('div');
+                div.className = 'bg-white border rounded-xl p-2 text-center shadow-sm';
+                let canvasHolder = document.createElement('div');
+                div.appendChild(canvasHolder);
+                let labelSpan = document.createElement('span');
+                labelSpan.className = 'text-[8px] font-bold truncate block mt-1 text-slate-600';
+                labelSpan.innerText = textData;
+                div.appendChild(labelSpan);
+                previewContainer.appendChild(div);
+                
+                if(currentTool === 'bulkQR') {
+                    new QRCode(canvasHolder, { text: textData, width: 70, height: 70 });
+                    let tempCanvas = document.createElement('canvas');
+                    let ctx = tempCanvas.getContext('2d');
+                    let qrDiv = document.createElement('div');
+                    new QRCode(qrDiv, { text: textData, width: 200, height: 200 });
+                    await new Promise(r => setTimeout(r, 30));
+                    let img = qrDiv.querySelector('img') || qrDiv.querySelector('canvas');
+                    if(img) {
+                        tempCanvas.width = 200;
+                        tempCanvas.height = 200;
+                        ctx.drawImage(img, 0, 0);
+                        bulkItemsArray.push({ label: textData, dataURL: tempCanvas.toDataURL() });
+                    }
+                } else {
+                    let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    canvasHolder.appendChild(svg);
+                    JsBarcode(svg, textData, { format: "CODE128", width: 1.2, height: 30 });
+                    let bcCanvas = document.createElement('canvas');
+                    JsBarcode(bcCanvas, textData, { format: "CODE128" });
+                    bulkItemsArray.push({ label: textData, dataURL: bcCanvas.toDataURL() });
+                }
+            }
+            document.getElementById('bulkDownloadOptions').classList.remove('hidden');
+            return;
+        }
+
+        // Single Barcode
+        if(currentTool === 'barcodeGen') {
+            let payload = getQRPayload();
+            let canvas = document.createElement('canvas');
+            JsBarcode(canvas, payload, { format: "CODE128", width: 2.5, height: 80 });
+            currentSingleDataURL = canvas.toDataURL();
+            previewContainer.innerHTML = `<img src="${currentSingleDataURL}" class="max-w-[240px] rounded-2xl shadow-2xl border-4 border-white">`;
+            document.getElementById('multiFormatDownload').classList.remove('hidden');
+            return;
+        }
+
+        // SINGLE QR (TEXT, URL, UPI, CONTACT, WIFI, MOBILE) - FULLY FIXED
+        let payload = getQRPayload();
+        console.log("Generating QR for:", payload.substring(0, 50));
+        
+        const tempDiv = document.createElement('div');
+        try {
+            // Generate QR Code
+            new QRCode(tempDiv, { text: payload, width: 280, height: 280 });
+            
+            // Wait for rendering
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            let canvasElem = tempDiv.querySelector('canvas');
+            if(canvasElem) {
+                currentSingleDataURL = canvasElem.toDataURL();
+                previewContainer.innerHTML = `<img src="${currentSingleDataURL}" class="rounded-2xl shadow-2xl border-4 border-white premium-glow" style="max-width: 280px;">`;
+                document.getElementById('multiFormatDownload').classList.remove('hidden');
+            } else {
+                let imgElem = tempDiv.querySelector('img');
+                if(imgElem && imgElem.src) {
+                    currentSingleDataURL = imgElem.src;
+                    previewContainer.innerHTML = `<img src="${currentSingleDataURL}" class="rounded-2xl shadow-2xl border-4 border-white">`;
+                    document.getElementById('multiFormatDownload').classList.remove('hidden');
+                } else {
+                    previewContainer.appendChild(tempDiv);
+                    currentSingleDataURL = null;
+                }
+            }
+        } catch(err) {
+            console.error("QR Generation Error:", err);
+            previewContainer.innerHTML = `<div class="text-red-500 text-center p-4">Failed to generate QR. Please check input and try again.</div>`;
+        }
+    }
+
+    // Download Functions
+    window.downloadSingleAs = (format) => {
+        if(!currentSingleDataURL) { alert("Please generate QR first!"); return; }
+        if(format === 'png') downloadURL(currentSingleDataURL, 'jrhub_qr.png');
+        else if(format === 'jpg') { 
+            let img = new Image(); 
+            img.src = currentSingleDataURL; 
+            img.onload = () => {
+                let c = document.createElement('canvas');
+                c.width = img.width;
+                c.height = img.height;
+                c.getContext('2d').drawImage(img, 0, 0);
+                downloadURL(c.toDataURL('image/jpeg', 0.9), 'jrhub_qr.jpg');
+            };
+        }
+        else if(format === 'pdf') { 
+            let div = document.createElement('div');
+            div.innerHTML = `<img src="${currentSingleDataURL}" style="width:100%">`;
+            html2pdf().set({ margin: 0.5, filename: 'qr_single.pdf' }).from(div).save();
+        }
+    };
+
+    window.downloadBulkAsPDF = async () => {
+        let grid = document.getElementById('bulkPrintGrid');
+        grid.innerHTML = '';
+        for(let item of bulkItemsArray) {
+            if(!item.dataURL) continue;
+            let box = document.createElement('div');
+            box.className = 'border p-2 text-center';
+            let img = document.createElement('img');
+            img.src = item.dataURL;
+            img.style.maxWidth = '100px';
+            box.appendChild(img);
+            let lbl = document.createElement('p');
+            lbl.innerText = item.label;
+            lbl.className = 'text-[10px] font-bold';
+            box.appendChild(lbl);
+            grid.appendChild(box);
+        }
+        html2pdf().set({ margin: 0.3, filename: 'bulk_160_codes.pdf' }).from(grid.parentElement).save();
+    };
+
+    window.downloadBulkAsZip = async () => {
+        let zip = new JSZip();
+        for(let i = 0; i < bulkItemsArray.length; i++) {
+            if(bulkItemsArray[i].dataURL) {
+                let base64 = bulkItemsArray[i].dataURL.split(',')[1];
+                zip.file(`${bulkItemsArray[i].label}.png`, base64, { base64: true });
+            }
+        }
+        let tempDiv = document.createElement('div');
+        let pdfBlob = await html2pdf().set({ margin: 0.3 }).from(tempDiv).outputPdf('blob');
+        zip.file('bulk_bundle.pdf', pdfBlob);
+        let blob = await zip.generateAsync({ type: "blob" });
+        downloadURL(URL.createObjectURL(blob), 'bulk_export.zip');
+    };
+
+    function downloadURL(url, name) {
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    window.handleDownload = () => { alert("Use PNG, JPG, or PDF buttons above to download."); };
+
+    // Scanner Functions
+    window.startLiveCamera = () => {
+        if(scannerInstance?.isScanning) scannerInstance.stop();
+        document.getElementById('cameraPreviewRegion').innerHTML = '<div id="reader"></div>';
+        scannerInstance = new Html5Qrcode("reader");
+        scannerInstance.start({ facingMode: "environment" }, { fps: 10 }, (txt) => {
+            document.getElementById('scanResultArea').classList.remove('hidden');
+            document.getElementById('scannedText').innerText = txt;
+            alert("✅ Scanned: " + txt);
+        }, () => {});
+    };
+
+    window.scanFromGallery = (input) => {
+        let file = input.files[0];
+        if(file) {
+            Html5Qrcode.scanFile(file, true).then(txt => {
+                document.getElementById('scanResultArea').classList.remove('hidden');
+                document.getElementById('scannedText').innerText = txt;
+                alert("✅ Scanned: " + txt);
+            }).catch(() => alert("No QR code found in image"));
+        }
+    };
+
+    window.switchMainTab = (tab) => {
+        if(scannerInstance?.isScanning) scannerInstance.stop();
+        const genView = document.getElementById('generatorView');
+        const scanView = document.getElementById('scannerView');
+        const genBtn = document.getElementById('tab-gen');
+        const scanBtn = document.getElementById('tab-scan');
+        
+        if(tab === 'generate') {
+            genView.classList.remove('hidden');
+            scanView.classList.add('hidden');
+            genBtn.classList.add('bg-[#0e5a77]', 'text-white', 'shadow-md');
+            scanBtn.classList.remove('bg-[#0e5a77]', 'text-white');
+            scanBtn.classList.add('text-slate-600');
+        } else {
+            genView.classList.add('hidden');
+            scanView.classList.remove('hidden');
+            scanBtn.classList.add('bg-[#0e5a77]', 'text-white', 'shadow-md');
+            genBtn.classList.remove('bg-[#0e5a77]', 'text-white');
+            genBtn.classList.add('text-slate-600');
+        }
+    };
+
+    // Initial Render
+    renderInputFields();
+    selectTool('textQR');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+</body>
+</html>
