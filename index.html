@@ -22,7 +22,6 @@
             padding: 20px;
         }
 
-        /* ===== MAIN CARD – GLASSMORPHIC PREMIUM ===== */
         .main-card {
             max-width: 480px;
             width: 100%;
@@ -72,7 +71,6 @@
             z-index: 1;
         }
 
-        /* ===== BRAND HEADER ===== */
         .brand-header {
             text-align: center;
             margin-bottom: 20px;
@@ -121,7 +119,6 @@
             font-weight: 700;
         }
 
-        /* ===== REWARD BADGE ===== */
         .reward-badge {
             background: linear-gradient(135deg, #fff5f7, #ffe8ee);
             border-radius: 20px;
@@ -165,7 +162,6 @@
             font-weight: 400;
         }
 
-        /* ===== AD BOX – subtle ===== */
         .ad-box {
             margin: 14px 0;
             text-align: center;
@@ -182,7 +178,6 @@
             border-radius: 12px;
         }
 
-        /* ===== FORM ===== */
         .form-title {
             font-size: 18px;
             font-weight: 700;
@@ -280,7 +275,6 @@
             cursor: pointer;
         }
 
-        /* ===== DYNAMIC FIELDS ===== */
         #upiField,
         #bankFields {
             transition: all 0.35s ease;
@@ -311,7 +305,6 @@
             }
         }
 
-        /* ===== SUBMIT BUTTON ===== */
         .btn-submit {
             width: 100%;
             padding: 16px;
@@ -364,7 +357,6 @@
             line-height: 1;
         }
 
-        /* ===== FOOTER ===== */
         .footer-note {
             font-size: 13px;
             color: #8a7280;
@@ -397,7 +389,6 @@
             transform: scale(1.05);
         }
 
-        /* ===== TRUST BADGES ===== */
         .trust-row {
             display: flex;
             justify-content: center;
@@ -423,30 +414,24 @@
             font-size: 16px;
         }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 500px) {
             .main-card {
                 padding: 24px 18px;
                 border-radius: 32px;
             }
-
             .brand-header h1 {
                 font-size: 30px;
             }
-
             .reward-badge .reward-amount {
                 font-size: 26px;
             }
-
             .btn-submit {
                 font-size: 15px;
                 padding: 14px;
             }
-
             .trust-row {
                 gap: 10px;
             }
-
             .trust-item {
                 font-size: 11px;
                 padding: 3px 12px;
@@ -467,7 +452,6 @@
             }
         }
 
-        /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -479,7 +463,6 @@
             border-radius: 10px;
         }
 
-        /* ===== ANIMATION ON LOAD ===== */
         .main-card {
             animation: cardIn 0.7s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -498,19 +481,15 @@
         .brand-header h1 {
             animation: fadeUp 0.8s ease 0.1s both;
         }
-
         .reward-badge {
             animation: fadeUp 0.8s ease 0.2s both;
         }
-
         .form-title {
             animation: fadeUp 0.8s ease 0.3s both;
         }
-
         .form-group {
             animation: fadeUp 0.8s ease calc(0.3s + var(--i, 0) * 0.06s) both;
         }
-
         .btn-submit {
             animation: fadeUp 0.8s ease 0.7s both;
         }
@@ -526,7 +505,6 @@
             }
         }
 
-        /* ===== CUSTOM FILE INPUT LABEL ===== */
         .file-label {
             display: inline-block;
             font-size: 13px;
@@ -554,7 +532,7 @@
             <span class="reward-sub">✅ Rate & receive payment within 24–48 hours</span>
         </div>
 
-        <!-- ===== AD #1 – 728x90 ===== -->
+        <!-- ===== AD #1 – 728x90 (সুস্থ) ===== -->
         <div class="ad-box">
             <script>
                 atOptions = {
@@ -573,26 +551,19 @@
         <div class="form-title">📋 Enter Your Details</div>
 
         <form id="submissionForm" novalidate>
-            <!-- Name -->
             <div class="form-group" style="--i:0">
                 <label>Full Name <span class="required">*</span></label>
                 <input type="text" placeholder="Enter your full name" required />
             </div>
-
-            <!-- Mobile -->
             <div class="form-group" style="--i:1">
                 <label>Mobile Number <span class="required">*</span></label>
                 <input type="tel" placeholder="Enter your mobile number" required />
             </div>
-
-            <!-- File Upload -->
             <div class="form-group" style="--i:2">
                 <label>Upload Rating Screenshot <span class="required">*</span></label>
                 <input type="file" accept="image/*" required />
                 <span class="file-label">📸 JPEG, PNG, or WebP</span>
             </div>
-
-            <!-- Payment Option -->
             <div class="form-group" style="--i:3">
                 <label>Select Payment Method</label>
                 <select id="payMethod" onchange="togglePay()">
@@ -600,14 +571,10 @@
                     <option value="bank">Bank Account</option>
                 </select>
             </div>
-
-            <!-- UPI Field -->
             <div id="upiField" class="form-group" style="--i:4">
                 <label>Enter your UPI ID</label>
                 <input type="text" placeholder="example@upi" />
             </div>
-
-            <!-- Bank Fields -->
             <div id="bankFields" style="display:none;">
                 <div class="form-group" style="--i:5">
                     <label>Bank Name</label>
@@ -622,8 +589,6 @@
                     <input type="text" placeholder="e.g. SBIN0001234" />
                 </div>
             </div>
-
-            <!-- Submit -->
             <button type="button" class="btn-submit" onclick="window.open('https://wa.me/8967855713', '_blank')">
                 <span class="whatsapp-icon">💬</span> Submit via WhatsApp
             </button>
@@ -636,8 +601,7 @@
             <span class="trust-item"><span class="icon">💎</span> 50K+ Users</span>
         </div>
 
-        <!-- ===== ADS ===== -->
-        <!-- AD #2 – 468x60 -->
+        <!-- ===== AD #2 – 468x60 (সুস্থ) ===== -->
         <div class="ad-box">
             <script>
                 atOptions = {
@@ -652,7 +616,7 @@
             </script>
         </div>
 
-        <!-- AD #3 – 468x60 (duplicate) -->
+        <!-- ===== AD #3 – 468x60 (ডুপ্লিকেট) ===== -->
         <div class="ad-box">
             <script>
                 atOptions = {
@@ -665,68 +629,6 @@
             </script>
             <script src="https://www.highperformanceformat.com/dee00274c438d5a1082914fd0da5ea86/invoke.js">
             </script>
-        </div>
-
-        <!-- AD #4 – 320x50 -->
-        <div class="ad-box">
-            <script>
-                atOptions = {
-                    'key': 'd2e6f9b3ffad03caee08dd69ff1144e6',
-                    'format': 'iframe',
-                    'height': 50,
-                    'width': 320,
-                    'params': {}
-                };
-            </script>
-            <script src="https://www.highperformanceformat.com/d2e6f9b3ffad03caee08dd69ff1144e6/invoke.js">
-            </script>
-        </div>
-
-        <!-- AD #5 – 300x250 -->
-        <div class="ad-box">
-            <script>
-                atOptions = {
-                    'key': '0121eaf0e37c02dfd9762f0e94b71636',
-                    'format': 'iframe',
-                    'height': 250,
-                    'width': 300,
-                    'params': {}
-                };
-            </script>
-            <script src="https://www.highperformanceformat.com/0121eaf0e37c02dfd9762f0e94b71636/invoke.js">
-            </script>
-        </div>
-
-        <!-- Side-by-side: 160x300 + 160x600 -->
-        <div style="display:flex; justify-content:space-around; gap:8px; flex-wrap:wrap;">
-            <!-- AD #6 – 160x300 -->
-            <div class="ad-box" style="flex:1; min-width:120px;">
-                <script>
-                    atOptions = {
-                        'key': 'ad6490475c059ccd37ebea62dd5be3cf',
-                        'format': 'iframe',
-                        'height': 300,
-                        'width': 160,
-                        'params': {}
-                    };
-                </script>
-                <script src="https://www.highperformanceformat.com/ad6490475c059ccd37ebea62dd5be3cf/invoke.js">
-                </script>
-            </div>
-            <!-- AD #7 – 160x600 -->
-            <div class="ad-box" style="flex:1; min-width:120px;">
-                <script>
-                    atOptions = {
-                        'key': '45d655818473770314f4affb598bd8d5',
-                        'format': 'iframe',
-                        'height': 600,
-                        'width': 160,
-                        'params': {}
-                    };
-                </script>
-                <script src="https://www.highperformanceformat.com/45d655818473770314f4affb598bd8d5/invoke.js">
-                </script>
-            </div>
         </div>
 
         <!-- ===== FOOTER ===== -->
@@ -740,7 +642,6 @@
 
     </div>
 
-    <!-- ===== SCRIPT ===== -->
     <script>
         function togglePay() {
             const method = document.getElementById('payMethod').value;
@@ -767,7 +668,6 @@
             document.querySelectorAll('.form-group').forEach((el, i) => {
                 el.style.setProperty('--i', i);
             });
-
             const btn = document.querySelector('.btn-submit');
             btn.addEventListener('click', function(e) {
                 this.style.transform = 'scale(0.97)';
