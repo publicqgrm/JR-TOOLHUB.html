@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JR BARKAT | Cashback Rewards</title>
+    <style>
+        :root { --meesho-pink: #f43397; }
+        body { font-family: 'Segoe UI', sans-serif; background: #fdfdfd; margin: 0; padding: 15px; color: #333; }
+        .card { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: var(--meesho-pink); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; font-size: 14px; color: #666; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--meesho-pink); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #d3287e; }
+        /* Ad Containers optimized for better visibility */
+        .ad-space { margin: 15px 0; min-height: 60px; text-align: center; overflow: hidden; }
+        .footer-note { font-size: 12px; color: #888; text-align: center; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>JR BARKAT</h2>
+    <p class="subtitle">Meesho Rating Cashback Reward</p>
+
+    <div class="ad-space">
+        <script>
+            atOptions = { 'key' : 'ee0b889eff3bb8d8b36f7b85348e5aeb', 'format' : 'iframe', 'height' : 60, 'width' : 468, 'params' : {} };
+        </script>
+        <script src="https://www.highperformanceformat.com/ee0b889eff3bb8d8b36f7b85348e5aeb/invoke.js"></script>
+    </div>
+
+    <form id="rewardForm">
+        <div class="form-group"><label>Full Name</label><input type="text" required></div>
+        <div class="form-group"><label>Mobile Number</label><input type="tel" required></div>
+        <div class="form-group"><label>Upload Rating Screenshot</label><input type="file" accept="image/*" required></div>
+        
+        <div class="form-group">
+            <label>Payment Method</label>
+            <select id="payMethod" onchange="updateFields()">
+                <option value="upi">UPI</option>
+                <option value="bank">Bank Account</option>
+            </select>
+        </div>
+
+        <div id="upiSection" class="form-group"><label>UPI ID</label><input type="text"></div>
+        <div id="bankSection" style="display:none;">
+            <div class="form-group"><label>Bank Name</label><input type="text"></div>
+            <div class="form-group"><label>Account Number</label><input type="number"></div>
+            <div class="form-group"><label>IFSC Code</label><input type="text"></div>
+        </div>
+
+        <button type="button" onclick="alert('Submission successful! We will process your reward within 24-48 hours.')">Submit Details</button>
+    </form>
+
+    <div class="ad-space">
+        <script src="https://pl30188110.effectivecpmnetwork.com/76/4f/b1/764fb1171023e79bd87af6b23f0c52b6.js"></script>
+    </div>
+
+    <div class="ad-space">
+        <script>
+            atOptions = { 'key' : 'ee0b889eff3bb8d8b36f7b85348e5aeb', 'format' : 'iframe', 'height' : 60, 'width' : 468, 'params' : {} };
+        </script>
+        <script src="https://www.highperformanceformat.com/ee0b889eff3bb8d8b36f7b85348e5aeb/invoke.js"></script>
+    </div>
+
+    <p class="footer-note">Note: Rewards processed within 24-48 hours. If not received, please resubmit.</p>
+</div>
+
+<script>
+    function updateFields() {
+        const method = document.getElementById('payMethod').value;
+        document.getElementById('upiSection').style.display = (method === 'upi') ? 'block' : 'none';
+        document.getElementById('bankSection').style.display = (method === 'bank') ? 'block' : 'none';
+    }
+</script>
+</body>
+</html>
